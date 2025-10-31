@@ -9,6 +9,11 @@ for f in ~/.local/share/omarchy/themes/*; do ln -nfs "$f" ~/.config/omarchy/them
 # Set initial theme
 mkdir -p ~/.config/omarchy/current
 ln -snf ~/.config/omarchy/themes/shadesofjade ~/.config/omarchy/current/theme
+
+# Ensure theme hyprland.conf exists (create empty one if theme doesn't have it)
+if [[ ! -f ~/.config/omarchy/current/theme/hyprland.conf ]]; then
+  echo "# Placeholder theme config" > ~/.config/omarchy/current/theme/hyprland.conf
+fi
 ln -snf ~/.config/omarchy/current/theme/backgrounds/Dark-Curves-by-Pawel-Czerwinski-Z18Pro.jpg ~/.config/omarchy/current/background
 
 # Set specific app links for current theme
