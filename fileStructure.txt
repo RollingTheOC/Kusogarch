@@ -1,0 +1,62 @@
+📁 Root Level Files
+install.sh - Main installation script
+boot.sh - Boot/startup script
+README.md - Documentation
+version - Version information
+logo.txt, logo.svg, icon.txt, icon.png - Branding assets
+📁 applications/ - Desktop Application Files
+Desktop files: imv.desktop, mpv.desktop, typora.desktop - Application shortcuts
+hidden/: Hidden desktop files (29 files) - Apps that won't show in menus (like avahi-discover, cups, dropbox, etc.)
+icons/: Custom app icons (17 files) - Icons for web apps like Discord, ChatGPT, GitHub, etc.
+📁 bin/ - Executable Scripts (100+ scripts)
+Categories include:
+
+Battery: omarchy-battery-monitor, omarchy-battery-remaining
+Commands: Screenshot, screenrecord, audio switch, terminal tools
+Installation helpers: Steam, VSCode, Docker, Dropbox installers
+System management: Package management, updates, restarts
+UI/Desktop: Window management, theming, launcher scripts
+Development: Dev environment setup, migration tools
+📁 config/ - Application Configuration Files
+Major configurations for:
+
+Desktop Environment: hypr/ (Hyprland), waybar/, walker/
+Terminals: alacritty/, kitty/, ghostty/
+Development: git/, lazygit/
+System: systemd/, environment.d/, fontconfig/
+Media: imv/, btop/
+Input: fcitx5/ (input method)
+Browsers: brave-flags.conf, chromium/
+📁 default/ - Default System Configurations
+Shell: bashrc, bash/
+Desktop: hypr/, waybar/, walker/, mako/
+System: pacman/, plymouth/, gpg/
+Applications: alacritty/, chromium/
+Compose: xcompose (special characters)
+📁 install/ - Installation Logic
+config/: Configuration scripts (20+ files including hardware detection, branding, theming)
+first-run/: First boot setup
+helpers/: Installation helper scripts (logging, error handling, presentation)
+login/: Login configuration
+post-install/: Post-installation tasks (4 scripts)
+preflight/: Pre-installation checks
+packaging/: Package management
+Package lists: omarchy-base.packages, omarchy-other.packages
+Package management: packages.ignored, packages.pinned
+📁 migrations/ - System Update Scripts
+160+ migration files - Numbered migration scripts for system updates (timestamps like 1751134560.sh)
+📁 themes/ - Visual Themes
+12 complete themes:
+
+catppuccin/, catppuccin-latte/
+everforest/, flexoki-light/
+gruvbox/, kanagawa/
+matte-black/, nord/
+osaka-jade/, ristretto/
+rose-pine/, tokyo-night/
+🎯 Key Areas for Customization:
+Packages: Edit omarchy-base.packages and omarchy-other.packages
+Themes: Modify or add themes in themes
+Configs: Customize apps in config and default
+Scripts: Modify behavior scripts in bin
+Applications: Add/remove desktop files in applications

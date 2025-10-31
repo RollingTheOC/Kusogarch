@@ -1,6 +1,6 @@
 # Omarchy
 
-Omarchy is a beautiful, modern & opinionated Linux distribution by DHH.
+Kusogarch is a branch of Omarchy, which is a branch of beautiful, modern & opinionated Linux distribution by DHH. Made better by Rolling Thunder.
 
 Read more at [omarchy.org](https://omarchy.org).
 

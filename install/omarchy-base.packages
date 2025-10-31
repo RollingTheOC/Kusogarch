@@ -1,8 +1,6 @@
 # Omarchy core package list installed via install/packaging/base.sh
 # This file is also used by the ISO builder when determining needs
 
-1password-beta
-1password-cli
 aether
 alacritty
 asdcontrol
@@ -47,6 +45,16 @@ ffmpegthumbnailer
 fontconfig
 fzf
 github-cli
+bitwarden
+steam
+discord
+visual-studio-code-bin
+minecraft-launcher
+prismlauncher
+limine
+limine-mkinitcpio-hook
+limine-snapper-sync
+snapper
 gnome-calculator
 gnome-keyring
 gnome-themes-extra
@@ -96,7 +104,7 @@ nss-mdns
 nvim
 obs-studio
 obsidian
-omarchy-chromium
+firefox
 omarchy-nvim
 pamixer
 pinta
@@ -113,9 +121,7 @@ qt5-wayland
 ripgrep
 satty
 sddm
-signal-desktop
 slurp
-spotify
 starship
 sushi
 swaybg
