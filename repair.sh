@@ -141,7 +141,7 @@ else
 fi
 echo ""
 
-# --- Step 8: Hyprpaper wallpaper ---
+# --- Step 8: Wallpaper config ---
 echo -e "${BOLD}8. Wallpaper config${NC}"
 HYPRPAPER_CONF="$CONFIG_DST/hypr/hyprpaper.conf"
 # Find wallpaper: theme first, then wallpapers dir
@@ -171,6 +171,30 @@ else
 splash = false
 EOF
     fix "No wallpaper found, hyprpaper.conf created empty"
+fi
+
+# Restart wallpaper daemon if Hyprland is running
+if pgrep -x Hyprland &>/dev/null && [ -n "$WALLPAPER" ]; then
+    if [ "$IS_VM" = true ]; then
+        killall hyprpaper 2>/dev/null
+        pkill swaybg 2>/dev/null
+        sleep 0.1
+        swaybg -i "$WALLPAPER" -m fill &>/dev/null &
+        disown
+        fix "Restarted wallpaper with swaybg (VM mode)"
+    else
+        killall swaybg 2>/dev/null
+        if pgrep -x hyprpaper &>/dev/null; then
+            hyprctl hyprpaper unload all &>/dev/null
+            hyprctl hyprpaper preload "$WALLPAPER" &>/dev/null
+            hyprctl hyprpaper wallpaper ",$WALLPAPER" &>/dev/null
+            fix "Reloaded hyprpaper wallpaper"
+        else
+            hyprpaper &>/dev/null &
+            disown
+            fix "Started hyprpaper"
+        fi
+    fi
 fi
 echo ""
 
