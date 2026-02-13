@@ -1,0 +1,204 @@
+#!/bin/bash
+# kusogarch-debug - Diagnose boot/display issues from TTY
+# Run this from a TTY when you get a black screen
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+ok()   { echo -e "  ${GREEN}[OK]${NC}   $1"; }
+fail() { echo -e "  ${RED}[FAIL]${NC} $1"; }
+warn() { echo -e "  ${YELLOW}[WARN]${NC} $1"; }
+info() { echo -e "  ${CYAN}[INFO]${NC} $1"; }
+
+echo ""
+echo -e "${BOLD}Kusogarch Debug Report${NC}"
+echo "======================"
+echo ""
+
+# --- 1. System basics ---
+echo -e "${BOLD}1. System${NC}"
+info "User: $USER"
+info "Kernel: $(uname -r)"
+info "Mode: $(cat ~/.config/kusogarch/mode 2>/dev/null || echo 'unknown')"
+info "GPU: $(cat ~/.config/kusogarch/gpu 2>/dev/null || echo 'unknown')"
+echo ""
+
+# --- 2. Display server ---
+echo -e "${BOLD}2. Display Server${NC}"
+
+if systemctl is-active sddm &>/dev/null; then
+    ok "SDDM is running"
+else
+    fail "SDDM is NOT running"
+    info "Journal: $(journalctl -u sddm -n 5 --no-pager 2>/dev/null | tail -3)"
+fi
+
+if systemctl is-enabled sddm &>/dev/null; then
+    ok "SDDM is enabled"
+else
+    fail "SDDM is NOT enabled — run: sudo systemctl enable sddm"
+fi
+echo ""
+
+# --- 3. Hyprland ---
+echo -e "${BOLD}3. Hyprland${NC}"
+
+if command -v Hyprland &>/dev/null; then
+    ok "Hyprland binary found: $(which Hyprland)"
+else
+    fail "Hyprland binary NOT found — not installed?"
+fi
+
+# Check if Hyprland config exists and is parseable
+HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
+if [ -f "$HYPR_CONF" ]; then
+    ok "hyprland.conf exists"
+else
+    fail "hyprland.conf MISSING at $HYPR_CONF"
+fi
+
+# Check all sourced config files exist
+echo ""
+echo -e "${BOLD}4. Config Files${NC}"
+
+check_file() {
+    local f="$1"
+    # Expand ~ to $HOME
+    f="${f/#\~/$HOME}"
+    if [ -f "$f" ]; then
+        ok "$f"
+    elif [ -L "$f" ] && [ ! -e "$f" ]; then
+        fail "$f (broken symlink -> $(readlink "$f"))"
+    else
+        fail "$f MISSING"
+    fi
+}
+
+# Parse source lines from hyprland.conf
+if [ -f "$HYPR_CONF" ]; then
+    while IFS= read -r line; do
+        # Extract path from "source = <path>"
+        path=$(echo "$line" | sed -n 's/^source *= *//p' | xargs)
+        if [ -n "$path" ]; then
+            check_file "$path"
+        fi
+    done < "$HYPR_CONF"
+fi
+echo ""
+
+# --- 5. Theme symlink ---
+echo -e "${BOLD}5. Theme${NC}"
+
+THEME_LINK="$HOME/.config/kusogarch/current/theme"
+if [ -L "$THEME_LINK" ]; then
+    TARGET=$(readlink -f "$THEME_LINK" 2>/dev/null)
+    if [ -d "$TARGET" ]; then
+        ok "Theme symlink -> $TARGET"
+        # Check theme has required files
+        for tf in hyprland.conf waybar.css kitty.conf; do
+            if [ -f "$TARGET/$tf" ]; then
+                ok "  theme/$tf"
+            else
+                fail "  theme/$tf MISSING"
+            fi
+        done
+    else
+        fail "Theme symlink BROKEN -> $(readlink "$THEME_LINK")"
+    fi
+elif [ -d "$THEME_LINK" ]; then
+    warn "Theme is a directory, not a symlink (still works)"
+else
+    fail "Theme symlink MISSING at $THEME_LINK"
+fi
+echo ""
+
+# --- 6. GPU & Graphics ---
+echo -e "${BOLD}6. GPU & Graphics${NC}"
+
+if lspci 2>/dev/null | grep -qi "VGA\|3D\|Display"; then
+    info "GPU: $(lspci | grep -iE 'VGA|3D|Display' | head -1 | sed 's/.*: //')"
+else
+    warn "Could not detect GPU via lspci"
+fi
+
+if [ -d /dev/dri ]; then
+    ok "/dev/dri exists (DRM devices present)"
+    ls -la /dev/dri/ 2>/dev/null | grep -E "card|render" | while read -r line; do
+        info "  $line"
+    done
+else
+    fail "/dev/dri MISSING — no GPU driver loaded"
+fi
+
+# Check for nvidia modules
+if lsmod | grep -qi nvidia; then
+    info "NVIDIA kernel module loaded"
+    if [ -f "$HOME/.config/hypr/envs-nvidia.conf" ]; then
+        ok "NVIDIA env config exists"
+    else
+        warn "NVIDIA detected but envs-nvidia.conf missing"
+    fi
+fi
+echo ""
+
+# --- 7. Key services ---
+echo -e "${BOLD}7. Services${NC}"
+
+for svc in NetworkManager bluetooth pipewire wireplumber; do
+    if systemctl is-active "$svc" &>/dev/null 2>&1 || \
+       systemctl --user is-active "$svc" &>/dev/null 2>&1; then
+        ok "$svc running"
+    else
+        warn "$svc not running"
+    fi
+done
+echo ""
+
+# --- 8. Hyprland logs ---
+echo -e "${BOLD}8. Hyprland Log (last 20 lines)${NC}"
+
+HYPR_LOG="$HOME/.local/share/hyprland/hyprland.log"
+HYPR_LOG2="/tmp/hypr/$(ls /tmp/hypr/ 2>/dev/null | head -1)/hyprland.log"
+
+if [ -f "$HYPR_LOG" ]; then
+    tail -20 "$HYPR_LOG"
+elif [ -f "$HYPR_LOG2" ]; then
+    tail -20 "$HYPR_LOG2"
+else
+    # Try to find it
+    FOUND=$(find /tmp/hypr -name "hyprland.log" 2>/dev/null | head -1)
+    if [ -n "$FOUND" ]; then
+        info "Found log at: $FOUND"
+        tail -20 "$FOUND"
+    else
+        warn "No Hyprland log found — Hyprland may have never started"
+    fi
+fi
+echo ""
+
+# --- 9. SDDM logs ---
+echo -e "${BOLD}9. SDDM Journal (last 10 lines)${NC}"
+journalctl -u sddm -n 10 --no-pager 2>/dev/null || warn "Could not read SDDM journal"
+echo ""
+
+# --- 10. Quick fixes ---
+echo -e "${BOLD}10. Quick Fixes${NC}"
+echo "  If Hyprland won't start, try launching manually:"
+echo "    Hyprland"
+echo ""
+echo "  If config errors, test with a clean config:"
+echo "    Hyprland -c /dev/null"
+echo ""
+echo "  If SDDM is broken, restart it:"
+echo "    sudo systemctl restart sddm"
+echo ""
+echo "  If theme symlink is broken, reset it:"
+echo "    ln -sf ~/.local/share/kusogarch/themes/default ~/.config/kusogarch/current/theme"
+echo ""
+echo "  Full Hyprland config check (shows parse errors):"
+echo "    Hyprland --config ~/.config/hypr/hyprland.conf 2>&1 | head -50"
+echo ""
