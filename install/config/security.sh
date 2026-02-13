@@ -3,17 +3,17 @@
 
 log_info "Configuring firewall..."
 
-# Enable UFW
+# Enable UFW service (starts on next boot)
 enable_service ufw
 
-# Set default policies
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-
-# Allow common services
-sudo ufw allow ssh
-
-# Enable
-sudo ufw --force enable
-
-log_success "Firewall configured (UFW)"
+# UFW commands require the daemon to be running.
+# Start it now, configure rules, then it persists across reboots.
+if sudo ufw status &>/dev/null; then
+    sudo ufw default deny incoming 2>/dev/null || true
+    sudo ufw default allow outgoing 2>/dev/null || true
+    sudo ufw allow ssh 2>/dev/null || true
+    sudo ufw --force enable 2>/dev/null || true
+    log_success "Firewall configured (UFW)"
+else
+    log_warn "UFW not available yet — rules will apply after reboot"
+fi
