@@ -11,6 +11,9 @@ if ! pacman -Qi satty &>/dev/null; then
     aur_install satty
 fi
 
+# SDDM Theme (Catppuccin Mocha)
+aur_install catppuccin-sddm-theme-mocha
+
 # Claude Desktop
 aur_install claude-desktop-bin
 

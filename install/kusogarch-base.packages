@@ -54,11 +54,10 @@ tldr
 plocate
 
 # === File Manager ===
-nautilus
-gnome-disk-utility
-gvfs-mtp
-gvfs-nfs
-gvfs-smb
+dolphin
+kio-extras
+ffmpegthumbs
+kdegraphics-thumbnailers
 
 # === Browser ===
 chromium
@@ -118,6 +117,8 @@ ttf-jetbrains-mono-nerd
 # === Theming ===
 qt5-wayland
 qt6-wayland
+qt6-svg
+qt6-declarative
 kvantum
 gnome-themes-extra
 
@@ -140,4 +141,3 @@ flatpak
 # === System ===
 power-profiles-daemon
 plymouth
-gnome-calculator
