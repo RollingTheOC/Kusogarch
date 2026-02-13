@@ -2,8 +2,6 @@
 # Kusogarch - Quick dev apply: sync repo configs to live system
 # Usage: kusogarch-dev-apply [--restart]
 
-set -e
-
 # Find repo root (wherever this script lives)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(dirname "$SCRIPT_DIR")"
@@ -22,22 +20,40 @@ echo "Repo: $REPO"
 echo ""
 
 # Pull latest
-echo "[1/5] Pulling latest..."
+echo "[1/6] Pulling latest..."
 git -C "$REPO" pull --ff-only 2>/dev/null || echo "  (skip: no remote or not ff)"
 
-# Sync defaults
-echo "[2/5] Syncing defaults..."
-mkdir -p "$KUSOGARCH_DIR/defaults"
-cp -r "$REPO/default/"* "$KUSOGARCH_DIR/defaults/"
+# Sync defaults (skip if symlinked to same location)
+echo "[2/6] Syncing defaults..."
+DEFAULTS_DST="$KUSOGARCH_DIR/defaults"
+if [ -L "$DEFAULTS_DST" ]; then
+    LINK_TARGET="$(readlink -f "$DEFAULTS_DST")"
+    REPO_DEFAULT="$(readlink -f "$REPO/default")"
+    if [ "$LINK_TARGET" = "$REPO_DEFAULT" ]; then
+        echo "  (skip: defaults already symlinked to repo)"
+    else
+        cp -r "$REPO/default/"* "$DEFAULTS_DST/"
+    fi
+else
+    mkdir -p "$DEFAULTS_DST"
+    cp -r "$REPO/default/"* "$DEFAULTS_DST/"
+fi
 
 # Sync config (force overwrite for dev)
-echo "[3/5] Syncing configs..."
+echo "[3/6] Syncing configs..."
 cp -r "$REPO/config/"* "$CONFIG_DIR/"
 
 # Sync themes
-echo "[4/5] Syncing themes..."
+echo "[4/6] Syncing themes..."
 mkdir -p "$KUSOGARCH_DIR/themes"
-cp -r "$REPO/themes/"* "$KUSOGARCH_DIR/themes/"
+# Only copy if themes dir isn't already in repo
+REPO_THEMES="$(readlink -f "$REPO/themes")"
+DST_THEMES="$(readlink -f "$KUSOGARCH_DIR/themes")"
+if [ "$REPO_THEMES" != "$DST_THEMES" ]; then
+    cp -r "$REPO/themes/"* "$KUSOGARCH_DIR/themes/"
+else
+    echo "  (skip: themes already in repo)"
+fi
 # Ensure theme symlink exists
 mkdir -p "$CONFIG_DIR/kusogarch/current"
 if [ ! -L "$CONFIG_DIR/kusogarch/current/theme" ]; then
@@ -45,23 +61,36 @@ if [ ! -L "$CONFIG_DIR/kusogarch/current/theme" ]; then
 fi
 
 # Sync bin scripts
-echo "[5/5] Syncing bin scripts..."
+echo "[5/6] Syncing bin scripts..."
 mkdir -p "$KUSOGARCH_DIR/bin"
-cp -r "$REPO/bin/"* "$KUSOGARCH_DIR/bin/"
+# Only copy if bin dir isn't already in repo
+REPO_BIN="$(readlink -f "$REPO/bin")"
+DST_BIN="$(readlink -f "$KUSOGARCH_DIR/bin")"
+if [ "$REPO_BIN" != "$DST_BIN" ]; then
+    cp -r "$REPO/bin/"* "$KUSOGARCH_DIR/bin/"
+else
+    echo "  (skip: bin already in repo)"
+fi
 chmod +x "$KUSOGARCH_DIR/bin/"*
 
-# Resolve hyprqt6engine placeholder (~ not expanded by Qt plugins)
+# Resolve hyprqt6engine color scheme path
+echo "[6/6] Resolving paths..."
 HYPRQT6_CONF="$CONFIG_DIR/hypr/hyprqt6engine.conf"
-if [ -f "$HYPRQT6_CONF" ] && grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
-    sed -i "s|PLACEHOLDER_COLOR_SCHEME|$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors|" "$HYPRQT6_CONF"
-    echo "  Resolved hyprqt6engine color scheme path"
+if [ -f "$HYPRQT6_CONF" ]; then
+    # Always re-resolve (config may have been overwritten with placeholder)
+    COLORS_FILE="$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors"
+    if grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
+        sed -i "s|PLACEHOLDER_COLOR_SCHEME|$COLORS_FILE|" "$HYPRQT6_CONF"
+        echo "  Resolved color scheme: $COLORS_FILE"
+    else
+        echo "  Color scheme already resolved"
+    fi
 fi
 
-# Update kdeglobals from gtk-qt.sh color values
+# Update kdeglobals
 if [ -f "$REPO/install/config/gtk-qt.sh" ]; then
-    # Extract the heredoc content and write kdeglobals
     sed -n '/cat > "\$HOME\/.config\/kdeglobals"/,/^EOF$/p' "$REPO/install/config/gtk-qt.sh" \
-        | sed '1d;$d' > "$CONFIG_DIR/kdeglobals" 2>/dev/null || true
+        | sed '1d;$d' > "$CONFIG_DIR/kdeglobals" 2>/dev/null && echo "  Updated kdeglobals" || true
 fi
 
 echo ""
