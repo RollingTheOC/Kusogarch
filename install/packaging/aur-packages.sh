@@ -11,6 +11,9 @@ if ! pacman -Qi satty &>/dev/null; then
     aur_install satty
 fi
 
+# ReGreet (GTK4 greeter for greetd)
+aur_install greetd-regreet
+
 # Claude Desktop
 aur_install claude-desktop-bin
 
