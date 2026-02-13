@@ -13,6 +13,7 @@ gnome-keyring
 # === Hyprland Utilities ===
 hypridle
 hyprlock
+hyprpaper
 hyprpicker
 hyprsunset
 xdg-desktop-portal-hyprland
@@ -25,7 +26,6 @@ fuzzel
 grim
 slurp
 satty
-swaybg
 wl-clipboard
 cliphist
 

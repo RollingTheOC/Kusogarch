@@ -33,15 +33,10 @@ sleep 0.3
 waybar &>/dev/null &
 disown
 
-# Update wallpaper if theme includes one
-if [ -f "$THEME_PATH/wallpaper.jpg" ] || [ -f "$THEME_PATH/wallpaper.png" ]; then
-    WALLPAPER=$(ls "$THEME_PATH"/wallpaper.* 2>/dev/null | head -1)
-    if [ -n "$WALLPAPER" ]; then
-        pkill swaybg 2>/dev/null
-        sleep 0.1
-        swaybg -m fill -i "$WALLPAPER" &>/dev/null &
-        disown
-    fi
+# Update wallpaper via hyprpaper if theme includes one
+WALLPAPER=$(find "$THEME_PATH" -maxdepth 1 -type f \( -name "wallpaper.*" \) 2>/dev/null | head -1)
+if [ -n "$WALLPAPER" ]; then
+    kusogarch-cmd-wallpaper set "$WALLPAPER"
 fi
 
 echo "Theme set to: $THEME_NAME"
