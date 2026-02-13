@@ -1,10 +1,14 @@
 #!/bin/bash
 # Kusogarch - Error handling setup
 
-KUSOGARCH_LOG="/tmp/kusogarch-install.log"
+export KUSOGARCH_LOG="/tmp/kusogarch-install.log"
+echo "--- Kusogarch install started $(date) ---" > "$KUSOGARCH_LOG"
 
-# Log all output to file as well
-exec > >(tee -a "$KUSOGARCH_LOG") 2>&1
+# Log helper: call this to write a line to the log file
+# (stdout stays on the terminal, log file is append-only)
+log_to_file() {
+    echo "$@" >> "$KUSOGARCH_LOG"
+}
 
 # Error trap
 on_error() {
@@ -12,6 +16,7 @@ on_error() {
     local line_no=$1
     log_error "Installation failed at line $line_no (exit code: $exit_code)"
     log_error "Check the log at: $KUSOGARCH_LOG"
+    log_to_file "FAILED at line $line_no (exit $exit_code)"
     echo ""
     echo "You can re-run the installer after fixing the issue:"
     echo "  bash $KUSOGARCH_DIR/install.sh"
@@ -22,3 +27,9 @@ trap 'on_error $LINENO' ERR
 
 log_info "Error handling configured"
 log_step "Install log: $KUSOGARCH_LOG"
+
+echo ""
+echo -e "${YELLOW}${BOLD}  Note: This installation will take a while (10-30+ min depending"
+echo -e "  on your internet speed). Packages are being downloaded and"
+echo -e "  configured — sit tight and let it run.${NC}"
+echo ""
