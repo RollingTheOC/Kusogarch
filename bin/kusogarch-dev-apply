@@ -1,0 +1,68 @@
+#!/bin/bash
+# Kusogarch - Quick dev apply: sync repo configs to live system
+# Usage: kusogarch-dev-apply [--restart]
+
+set -e
+
+# Find repo root (wherever this script lives)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(dirname "$SCRIPT_DIR")"
+
+# Verify we're in the right repo
+if [ ! -f "$REPO/version" ]; then
+    echo "Error: Can't find repo root (expected version file at $REPO/version)"
+    exit 1
+fi
+
+KUSOGARCH_DIR="$HOME/.local/share/kusogarch"
+CONFIG_DIR="$HOME/.config"
+
+echo "=== Kusogarch Dev Apply ==="
+echo "Repo: $REPO"
+echo ""
+
+# Pull latest
+echo "[1/5] Pulling latest..."
+git -C "$REPO" pull --ff-only 2>/dev/null || echo "  (skip: no remote or not ff)"
+
+# Sync defaults
+echo "[2/5] Syncing defaults..."
+mkdir -p "$KUSOGARCH_DIR/defaults"
+cp -r "$REPO/default/"* "$KUSOGARCH_DIR/defaults/"
+
+# Sync config (force overwrite for dev)
+echo "[3/5] Syncing configs..."
+cp -r "$REPO/config/"* "$CONFIG_DIR/"
+
+# Sync themes
+echo "[4/5] Syncing themes..."
+mkdir -p "$KUSOGARCH_DIR/themes"
+cp -r "$REPO/themes/"* "$KUSOGARCH_DIR/themes/"
+# Ensure theme symlink exists
+mkdir -p "$CONFIG_DIR/kusogarch/current"
+if [ ! -L "$CONFIG_DIR/kusogarch/current/theme" ]; then
+    ln -sf "$KUSOGARCH_DIR/themes/default" "$CONFIG_DIR/kusogarch/current/theme"
+fi
+
+# Sync bin scripts
+echo "[5/5] Syncing bin scripts..."
+mkdir -p "$KUSOGARCH_DIR/bin"
+cp -r "$REPO/bin/"* "$KUSOGARCH_DIR/bin/"
+chmod +x "$KUSOGARCH_DIR/bin/"*
+
+# Update kdeglobals from gtk-qt.sh color values
+if [ -f "$REPO/install/config/gtk-qt.sh" ]; then
+    # Extract the heredoc content and write kdeglobals
+    sed -n '/cat > "\$HOME\/.config\/kdeglobals"/,/^EOF$/p' "$REPO/install/config/gtk-qt.sh" \
+        | sed '1d;$d' > "$CONFIG_DIR/kdeglobals" 2>/dev/null || true
+fi
+
+echo ""
+echo "Done! All configs synced."
+
+if [ "$1" = "--restart" ]; then
+    echo "Restarting Hyprland..."
+    hyprctl dispatch exit
+else
+    echo "Restart Dolphin to see changes, or run with --restart to restart Hyprland."
+fi
