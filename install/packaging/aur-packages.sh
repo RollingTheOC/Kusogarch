@@ -14,6 +14,9 @@ fi
 # ReGreet (GTK4 greeter for greetd)
 aur_install greetd-regreet
 
+# hyprqt6engine (Hyprland Qt6 platform theme - KColorScheme support)
+aur_install hyprqt6engine
+
 # Claude Desktop
 aur_install claude-desktop-bin
 

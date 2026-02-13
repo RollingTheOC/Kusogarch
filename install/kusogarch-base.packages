@@ -118,7 +118,6 @@ ttf-jetbrains-mono-nerd
 # === Theming ===
 qt5-wayland
 qt6-wayland
-hyprqt6engine
 breeze
 gnome-themes-extra
 
