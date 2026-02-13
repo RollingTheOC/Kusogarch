@@ -1,0 +1,158 @@
+#!/bin/bash
+# Kusogarch Repair - Re-deploy configs after pulling latest fixes
+# Usage: bash ~/.local/share/kusogarch/repair.sh
+#   or:  curl -sL https://raw.githubusercontent.com/RollingTheOC/Kusogarch/main/repair.sh | bash
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+ok()   { echo -e "  ${GREEN}[OK]${NC}   $1"; }
+fail() { echo -e "  ${RED}[FAIL]${NC} $1"; }
+info() { echo -e "  ${CYAN}[INFO]${NC} $1"; }
+fix()  { echo -e "  ${YELLOW}[FIX]${NC}  $1"; }
+
+KUSOGARCH_DIR="$HOME/.local/share/kusogarch"
+CONFIG_DST="$HOME/.config"
+
+echo ""
+echo -e "${BOLD}Kusogarch Repair${NC}"
+echo "================"
+echo ""
+
+# --- Step 1: Pull latest ---
+echo -e "${BOLD}1. Updating repo${NC}"
+if [ -d "$KUSOGARCH_DIR/.git" ]; then
+    cd "$KUSOGARCH_DIR"
+    git pull --ff-only 2>/dev/null && ok "Pulled latest changes" || {
+        git fetch origin main && git reset --hard origin/main
+        ok "Force-updated to latest"
+    }
+else
+    info "Repo not found, cloning..."
+    git clone https://github.com/RollingTheOC/Kusogarch.git "$KUSOGARCH_DIR"
+    ok "Cloned repo"
+fi
+echo ""
+
+# --- Step 2: Fix defaults symlink ---
+echo -e "${BOLD}2. Defaults symlink${NC}"
+DEFAULT_SRC="$KUSOGARCH_DIR/default"
+DEFAULT_DST="$KUSOGARCH_DIR/defaults"
+
+if [ -d "$DEFAULT_SRC" ]; then
+    # Remove broken or wrong symlink/directory
+    if [ -e "$DEFAULT_DST" ] || [ -L "$DEFAULT_DST" ]; then
+        rm -rf "$DEFAULT_DST"
+        fix "Removed old defaults"
+    fi
+    ln -sf "$DEFAULT_SRC" "$DEFAULT_DST"
+    ok "defaults -> default symlink created"
+else
+    fail "default/ directory missing from repo!"
+fi
+echo ""
+
+# --- Step 3: Create config directories ---
+echo -e "${BOLD}3. Config directories${NC}"
+mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,kitty,mako,btop,fastfetch}
+mkdir -p "$CONFIG_DST"/kusogarch/{current,themes}
+ok "All directories created"
+echo ""
+
+# --- Step 4: Deploy config files ---
+echo -e "${BOLD}4. Deploying config files${NC}"
+CONFIG_SRC="$KUSOGARCH_DIR/config"
+COUNT=0
+if [ -d "$CONFIG_SRC" ]; then
+    while IFS= read -r -d '' src; do
+        relative="${src#$CONFIG_SRC/}"
+        dst="$CONFIG_DST/$relative"
+        mkdir -p "$(dirname "$dst")"
+        # Always overwrite during repair
+        cp -f "$src" "$dst"
+        COUNT=$((COUNT + 1))
+    done < <(find "$CONFIG_SRC" -type f -print0)
+    ok "Deployed $COUNT config files"
+else
+    fail "config/ directory missing from repo!"
+fi
+echo ""
+
+# --- Step 5: input-surface.conf placeholder ---
+echo -e "${BOLD}5. Surface input placeholder${NC}"
+SURFACE_INPUT="$CONFIG_DST/hypr/input-surface.conf"
+if [ ! -f "$SURFACE_INPUT" ] || [ ! -s "$SURFACE_INPUT" ]; then
+    echo "# No Surface input config (desktop mode)" > "$SURFACE_INPUT"
+    fix "Created input-surface.conf placeholder"
+else
+    ok "input-surface.conf exists"
+fi
+echo ""
+
+# --- Step 6: Theme symlink ---
+echo -e "${BOLD}6. Theme symlink${NC}"
+THEME_LINK="$CONFIG_DST/kusogarch/current/theme"
+THEME_SRC="$KUSOGARCH_DIR/themes/default"
+
+if [ -d "$THEME_SRC" ]; then
+    # Force recreate theme symlink
+    rm -rf "$THEME_LINK"
+    ln -sf "$THEME_SRC" "$THEME_LINK"
+    echo "default" > "$CONFIG_DST/kusogarch/current/theme.name"
+    ok "Theme -> default ($(ls "$THEME_SRC" | wc -l) files)"
+else
+    fail "themes/default/ directory missing from repo!"
+fi
+echo ""
+
+# --- Step 7: Verify all source paths ---
+echo -e "${BOLD}7. Verifying Hyprland source files${NC}"
+MISSING=0
+for f in \
+    "$KUSOGARCH_DIR/defaults/hypr/hyprland.conf" \
+    "$CONFIG_DST/kusogarch/current/theme/hyprland.conf" \
+    "$CONFIG_DST/hypr/hyprland.conf" \
+    "$CONFIG_DST/hypr/monitors.conf" \
+    "$CONFIG_DST/hypr/input.conf" \
+    "$CONFIG_DST/hypr/envs.conf" \
+    "$CONFIG_DST/hypr/looknfeel.conf" \
+    "$CONFIG_DST/hypr/windows.conf" \
+    "$CONFIG_DST/hypr/autostart.conf" \
+    "$CONFIG_DST/hypr/bindings/apps.conf" \
+    "$CONFIG_DST/hypr/bindings/tiling.conf" \
+    "$CONFIG_DST/hypr/bindings/media.conf" \
+    "$CONFIG_DST/hypr/bindings/utilities.conf" \
+    "$CONFIG_DST/hypr/bindings/clipboard.conf" \
+    "$CONFIG_DST/hypr/input-surface.conf"; do
+    if [ -f "$f" ]; then
+        ok "$f"
+    else
+        fail "$f MISSING"
+        MISSING=$((MISSING + 1))
+    fi
+done
+echo ""
+
+# --- Step 8: Set bin permissions ---
+echo -e "${BOLD}8. Script permissions${NC}"
+chmod +x "$KUSOGARCH_DIR"/bin/* 2>/dev/null
+ok "All bin/ scripts executable"
+echo ""
+
+# --- Result ---
+echo -e "${BOLD}Result${NC}"
+echo "======="
+if [ "$MISSING" -eq 0 ]; then
+    echo -e "${GREEN}${BOLD}All config files present! Try starting Hyprland:${NC}"
+    echo ""
+    echo "  Hyprland"
+    echo ""
+else
+    echo -e "${RED}${BOLD}$MISSING files still missing. Check the errors above.${NC}"
+fi
