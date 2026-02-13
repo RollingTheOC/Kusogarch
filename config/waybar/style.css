@@ -1,6 +1,6 @@
 /* Kusogarch - Waybar Stylesheet */
 /* Theme colors are imported from the active theme */
-@import "../../kusogarch/current/theme/waybar.css";
+@import "../kusogarch/current/theme/waybar.css";
 
 * {
     font-family: "JetBrains Mono Nerd Font", "Noto Sans", sans-serif;
