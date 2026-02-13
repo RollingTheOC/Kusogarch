@@ -61,7 +61,7 @@ color_scheme_path=PLACEHOLDER
 custom_palette=true
 icon_theme=breeze-dark
 standard_dialogs=default
-style=Breeze
+style=Fusion
 
 [Fonts]
 fixed="JetBrains Mono Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"
