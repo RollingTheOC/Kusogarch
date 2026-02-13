@@ -41,7 +41,7 @@ fi
 mkdir -p "$HOME/.config/Kvantum"
 cat > "$HOME/.config/Kvantum/kvantum.kvconfig" << 'EOF'
 [General]
-theme=catppuccin-mocha-blue
+theme=Catppuccin-Mocha-Blue
 EOF
 
 # === Qt6ct — fallback palette for non-Kvantum contexts ===
