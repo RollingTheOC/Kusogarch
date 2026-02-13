@@ -59,8 +59,8 @@ DecorationFocus=137,180,250
 DecorationHover=69,71,90
 
 [Colors:Window]
-BackgroundNormal=30,30,46
-BackgroundAlternate=35,35,52
+BackgroundNormal=24,24,37
+BackgroundAlternate=30,30,46
 ForegroundNormal=205,214,244
 ForegroundInactive=166,173,200
 ForegroundLink=137,180,250
