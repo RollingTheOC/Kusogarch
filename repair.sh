@@ -60,7 +60,7 @@ echo ""
 
 # --- Step 3: Create config directories ---
 echo -e "${BOLD}3. Config directories${NC}"
-mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,kitty,mako,btop,fastfetch}
+mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,fuzzel,kitty,mako,btop,fastfetch}
 mkdir -p "$CONFIG_DST"/kusogarch/{current,themes}
 ok "All directories created"
 echo ""

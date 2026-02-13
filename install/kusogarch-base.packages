@@ -18,6 +18,9 @@ hyprsunset
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 
+# === Launcher ===
+fuzzel
+
 # === Display & Screenshot ===
 grim
 slurp

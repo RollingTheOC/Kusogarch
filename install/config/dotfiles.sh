@@ -7,7 +7,7 @@ CONFIG_SRC="$KUSOGARCH_DIR/config"
 CONFIG_DST="$HOME/.config"
 
 # Create directories
-mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,kitty,mako,btop,fastfetch}
+mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,fuzzel,kitty,mako,btop,fastfetch}
 mkdir -p "$CONFIG_DST"/kusogarch/{current,themes}
 
 # Deploy config files (do not overwrite existing user files)
