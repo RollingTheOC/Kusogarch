@@ -5,9 +5,23 @@
 CONF="$HOME/.config/hypr/hyprpaper.conf"
 
 # Extract wallpaper path from hyprpaper.conf
+# Handles both formats:
+#   preload = /path/to/wallpaper.jpg       (literal path)
+#   $WALLPAPER = /path/to/...              (Hyprlang variable)
+#   preload = $WALLPAPER
 WP=""
 if [ -f "$CONF" ]; then
+    # First try literal path in preload line
     WP=$(grep -m1 '^preload = ' "$CONF" | sed 's/^preload = //')
+
+    # If it's a variable reference ($WALLPAPER), resolve it
+    if [[ "$WP" == \$* ]]; then
+        VARNAME="${WP#\$}"
+        WP=$(grep -m1 "^\\\$$VARNAME = " "$CONF" | sed "s/^\\\$$VARNAME = //")
+    fi
+
+    # Expand ~ to $HOME
+    WP="${WP/#\~/$HOME}"
 fi
 
 # VM detection
