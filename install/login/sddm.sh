@@ -57,10 +57,20 @@ for candidate in \
     fi
 done
 
+# Copy wallpaper to /etc/greetd/ so the greeter user can read it
+# (greeter user can't traverse /home/<user>/ which is typically 700)
+GREETER_BG_PATH=""
+if [ -n "$GREETER_BG" ]; then
+    sudo cp "$GREETER_BG" /etc/greetd/background.jpg
+    sudo chmod 644 /etc/greetd/background.jpg
+    GREETER_BG_PATH="/etc/greetd/background.jpg"
+    log_step "Wallpaper copied for greeter access"
+fi
+
 # ReGreet config (CSS path included directly)
 cat << EOF | sudo tee /etc/greetd/regreet.toml >/dev/null
 [background]
-path = "${GREETER_BG:-}"
+path = "${GREETER_BG_PATH}"
 fit = "Cover"
 
 [GTK]
@@ -166,10 +176,5 @@ label.error {
 }
 EOF
 log_step "Catppuccin Mocha CSS applied"
-
-# Give greeter user read access to wallpaper
-if [ -n "$GREETER_BG" ]; then
-    sudo chmod o+r "$GREETER_BG" 2>/dev/null
-fi
 
 log_success "greetd + ReGreet configured"
