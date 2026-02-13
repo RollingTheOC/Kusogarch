@@ -145,21 +145,23 @@ echo ""
 echo -e "${BOLD}8. Verifying Hyprland source files${NC}"
 MISSING=0
 for f in \
-    "$KUSOGARCH_DIR/defaults/hypr/hyprland.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/autostart.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/envs.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/looknfeel.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/input.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/windows.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/bindings/media.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/bindings/clipboard.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/bindings/tiling.conf" \
+    "$KUSOGARCH_DIR/defaults/hypr/bindings/utilities.conf" \
     "$CONFIG_DST/kusogarch/current/theme/hyprland.conf" \
     "$CONFIG_DST/hypr/hyprland.conf" \
     "$CONFIG_DST/hypr/monitors.conf" \
     "$CONFIG_DST/hypr/input.conf" \
-    "$CONFIG_DST/hypr/envs.conf" \
-    "$CONFIG_DST/hypr/envs-vm.conf" \
+    "$CONFIG_DST/hypr/bindings.conf" \
     "$CONFIG_DST/hypr/looknfeel.conf" \
-    "$CONFIG_DST/hypr/windows.conf" \
     "$CONFIG_DST/hypr/autostart.conf" \
-    "$CONFIG_DST/hypr/bindings/apps.conf" \
-    "$CONFIG_DST/hypr/bindings/tiling.conf" \
-    "$CONFIG_DST/hypr/bindings/media.conf" \
-    "$CONFIG_DST/hypr/bindings/utilities.conf" \
-    "$CONFIG_DST/hypr/bindings/clipboard.conf" \
+    "$CONFIG_DST/hypr/envs-vm.conf" \
     "$CONFIG_DST/hypr/input-surface.conf"; do
     if [ -f "$f" ]; then
         ok "$f"
