@@ -6,7 +6,7 @@ set -eEo pipefail
 echo ""
 echo "========================================="
 echo "  Kusogarch Installer Bootstrap"
-echo "  Omarchy-inspired Arch Linux Setup"
+echo "  Arch Linux + Hyprland + Surface"
 echo "========================================="
 echo ""
 
@@ -31,7 +31,7 @@ if ! command -v git &>/dev/null; then
 fi
 
 # Configuration
-KUSOGARCH_REPO="${KUSOGARCH_REPO:-Rolling/SurfaceLinuxDistro}"
+KUSOGARCH_REPO="${KUSOGARCH_REPO:-RollingTheOC/Kusogarch}"
 KUSOGARCH_REF="${KUSOGARCH_REF:-main}"
 KUSOGARCH_DIR="$HOME/.local/share/kusogarch"
 
