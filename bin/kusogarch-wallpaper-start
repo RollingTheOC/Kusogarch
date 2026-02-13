@@ -1,0 +1,24 @@
+#!/bin/bash
+# Kusogarch - Start wallpaper daemon on login
+# Uses hyprpaper on bare metal, swaybg in VMs (hyprpaper requires OpenGL)
+
+CONF="$HOME/.config/hypr/hyprpaper.conf"
+
+# Extract wallpaper path from hyprpaper.conf
+WP=""
+if [ -f "$CONF" ]; then
+    WP=$(grep -m1 '^preload = ' "$CONF" | sed 's/^preload = //')
+fi
+
+# VM detection
+if systemd-detect-virt -q 2>/dev/null; then
+    # VM: swaybg (software rendering only)
+    if [ -n "$WP" ] && [ -f "$WP" ]; then
+        exec swaybg -i "$WP" -m fill
+    else
+        exec swaybg -c "#1e1e2e"
+    fi
+else
+    # Bare metal: hyprpaper (GPU-accelerated)
+    exec hyprpaper
+fi

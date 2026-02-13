@@ -57,7 +57,7 @@ for candidate in \
     fi
 done
 
-# ReGreet config
+# ReGreet config (CSS path included directly)
 cat << EOF | sudo tee /etc/greetd/regreet.toml >/dev/null
 [background]
 path = "${GREETER_BG:-}"
@@ -68,6 +68,7 @@ application_prefer_dark_theme = true
 cursor_theme_name = "Adwaita"
 font_name = "JetBrains Mono Nerd Font 12"
 icon_theme_name = "Adwaita"
+css = "/etc/greetd/regreet.css"
 
 [commands]
 reboot = ["systemctl", "reboot"]
@@ -169,14 +170,6 @@ log_step "Catppuccin Mocha CSS applied"
 # Give greeter user read access to wallpaper
 if [ -n "$GREETER_BG" ]; then
     sudo chmod o+r "$GREETER_BG" 2>/dev/null
-fi
-
-# Ensure greeter user can access regreet CSS
-if [ -f /etc/greetd/regreet.css ]; then
-    # Point regreet to the CSS (add to environment if needed)
-    if ! grep -q "css" /etc/greetd/regreet.toml; then
-        sudo sed -i '/^\[GTK\]/a css = "/etc/greetd/regreet.css"' /etc/greetd/regreet.toml
-    fi
 fi
 
 log_success "greetd + ReGreet configured"

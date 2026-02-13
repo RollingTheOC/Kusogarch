@@ -1,9 +1,9 @@
 #!/bin/bash
-# Kusogarch - GTK/Qt theming
+# Kusogarch - GTK/Qt theming (Catppuccin Mocha)
 
 log_info "Configuring GTK/Qt theming..."
 
-# GTK settings
+# GTK3 settings
 mkdir -p "$HOME/.config/gtk-3.0"
 cat > "$HOME/.config/gtk-3.0/settings.ini" << 'EOF'
 [Settings]
@@ -39,7 +39,110 @@ fi
 mkdir -p "$HOME/.config/Kvantum"
 cat > "$HOME/.config/Kvantum/kvantum.kvconfig" << 'EOF'
 [General]
-theme=KvArcDark
+theme=KvDark
+EOF
+
+# KDE color scheme (Catppuccin Mocha) — Dolphin and other KDE apps read this directly
+cat > "$HOME/.config/kdeglobals" << 'EOF'
+[General]
+ColorScheme=CatppuccinMocha
+Name=Catppuccin Mocha
+font=Noto Sans,11,-1,5,50,0,0,0,0,0
+toolBarFont=Noto Sans,10,-1,5,50,0,0,0,0,0
+
+[Colors:View]
+BackgroundNormal=30,30,46
+BackgroundAlternate=35,35,52
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Window]
+BackgroundNormal=30,30,46
+BackgroundAlternate=35,35,52
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Button]
+BackgroundNormal=49,50,68
+BackgroundAlternate=69,71,90
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Selection]
+BackgroundNormal=137,180,250
+BackgroundAlternate=137,180,250
+ForegroundNormal=30,30,46
+ForegroundInactive=30,30,46
+ForegroundLink=30,30,46
+ForegroundVisited=30,30,46
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Tooltip]
+BackgroundNormal=49,50,68
+BackgroundAlternate=49,50,68
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Complementary]
+BackgroundNormal=24,24,37
+BackgroundAlternate=30,30,46
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[Colors:Header]
+BackgroundNormal=24,24,37
+BackgroundAlternate=30,30,46
+ForegroundNormal=205,214,244
+ForegroundInactive=166,173,200
+ForegroundLink=137,180,250
+ForegroundVisited=203,166,247
+ForegroundNegative=243,139,168
+ForegroundNeutral=250,179,135
+ForegroundPositive=166,227,161
+DecorationFocus=137,180,250
+DecorationHover=69,71,90
+
+[KDE]
+contrast=4
 EOF
 
 log_success "GTK/Qt theming configured"
