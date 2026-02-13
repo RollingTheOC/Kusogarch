@@ -35,18 +35,18 @@ if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface font-name 'Noto Sans 11'
 fi
 
-# === Qt6ct — Catppuccin Mocha color palette ===
-# qt6ct is the platform theme for Qt6 apps (Dolphin, etc.) on non-Plasma desktops.
-# It reads from ~/.config/qt6ct/ for style, fonts, and colors.
+# === Kvantum — Catppuccin Mocha theme ===
+# QT_STYLE_OVERRIDE=kvantum forces Kvantum for all Qt apps, including KDE apps
+# like Dolphin which bypass qt6ct's palette via their own KDE color management.
+mkdir -p "$HOME/.config/Kvantum"
+cat > "$HOME/.config/Kvantum/kvantum.kvconfig" << 'EOF'
+[General]
+theme=catppuccin-mocha-blue
+EOF
 
+# === Qt6ct — fallback palette for non-Kvantum contexts ===
 mkdir -p "$HOME/.config/qt6ct/colors"
 
-# Catppuccin Mocha QPalette color scheme
-# Format: #AARRGGBB for each QPalette::ColorRole
-# Roles: WindowText, Button, Light, Midlight, Dark, Mid, Text, BrightText,
-#        ButtonText, Base, Window, Shadow, Highlight, HighlightedText,
-#        Link, LinkVisited, AlternateBase, ToolTipBase, ToolTipText,
-#        PlaceholderText, Accent
 cat > "$HOME/.config/qt6ct/colors/CatppuccinMocha.conf" << 'EOF'
 [ColorScheme]
 active_colors=#ffcdd6f4, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536, #ffcdd6f4, #ffffffff, #ffcdd6f4, #ff1e1e2e, #ff1e1e2e, #ff11111b, #ff89b4fa, #ff1e1e2e, #ff89b4fa, #ffcba6f7, #ff181825, #ff313244, #ffcdd6f4, #ff6c7086, #ff89b4fa
@@ -54,21 +54,19 @@ inactive_colors=#ffcdd6f4, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536
 disabled_colors=#ff6c7086, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536, #ff6c7086, #ff585b70, #ff6c7086, #ff1e1e2e, #ff1e1e2e, #ff11111b, #ff45475a, #ffa6adc8, #ff585b70, #ff585b70, #ff181825, #ff313244, #ffcdd6f4, #ff45475a, #ff45475a
 EOF
 
-# qt6ct main config
 cat > "$HOME/.config/qt6ct/qt6ct.conf" << 'EOF'
 [Appearance]
 color_scheme_path=PLACEHOLDER
 custom_palette=true
 icon_theme=breeze-dark
 standard_dialogs=default
-style=Fusion
+style=kvantum
 
 [Fonts]
 fixed="JetBrains Mono Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"
 general="Noto Sans,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"
 EOF
 
-# Fix the color scheme path (needs absolute path with $HOME expanded)
 sed -i "s|PLACEHOLDER|$HOME/.config/qt6ct/colors/CatppuccinMocha.conf|" "$HOME/.config/qt6ct/qt6ct.conf"
 
 # KDE color scheme (kdeglobals) — KDE apps like Dolphin also read this

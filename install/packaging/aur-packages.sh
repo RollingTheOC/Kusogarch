@@ -14,6 +14,9 @@ fi
 # ReGreet (GTK4 greeter for greetd)
 aur_install greetd-regreet
 
+# Catppuccin Mocha Kvantum theme (Qt app theming)
+aur_install kvantum-theme-catppuccin-git
+
 # Claude Desktop
 aur_install claude-desktop-bin
 
