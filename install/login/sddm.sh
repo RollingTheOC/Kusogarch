@@ -9,10 +9,7 @@ enable_service sddm
 sudo mkdir -p /etc/sddm.conf.d
 cat << 'EOF' | sudo tee /etc/sddm.conf.d/kusogarch.conf >/dev/null
 [General]
-DisplayServer=wayland
-
-[Wayland]
-CompositorCommand=Hyprland
+DisplayServer=x11
 
 [Autologin]
 User=
