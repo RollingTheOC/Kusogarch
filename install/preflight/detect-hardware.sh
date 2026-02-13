@@ -3,6 +3,19 @@
 
 log_info "Detecting hardware..."
 
+# Detect virtual machine
+IS_VM=false
+VM_TYPE=""
+if command -v systemd-detect-virt &>/dev/null; then
+    VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
+    if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
+        IS_VM=true
+        log_step "Virtual machine detected: $VM_TYPE"
+    fi
+fi
+export KUSOGARCH_VM="$IS_VM"
+export KUSOGARCH_VM_TYPE="$VM_TYPE"
+
 # Auto-detect Microsoft Surface via DMI
 IS_SURFACE=false
 SURFACE_MODEL=""
@@ -73,3 +86,4 @@ export KUSOGARCH_IS_SURFACE="$IS_SURFACE"
 mkdir -p "$HOME/.config/kusogarch"
 echo "$KUSOGARCH_MODE" > "$HOME/.config/kusogarch/mode"
 echo "$KUSOGARCH_GPU" > "$HOME/.config/kusogarch/gpu"
+echo "$KUSOGARCH_VM" > "$HOME/.config/kusogarch/vm"

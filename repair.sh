@@ -84,8 +84,38 @@ else
 fi
 echo ""
 
-# --- Step 5: input-surface.conf placeholder ---
-echo -e "${BOLD}5. Surface input placeholder${NC}"
+# --- Step 5: VM detection + software rendering ---
+echo -e "${BOLD}5. VM detection${NC}"
+IS_VM=false
+VM_TYPE=""
+if command -v systemd-detect-virt &>/dev/null; then
+    VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
+    if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
+        IS_VM=true
+    fi
+fi
+
+VM_ENVS="$CONFIG_DST/hypr/envs-vm.conf"
+if [ "$IS_VM" = true ]; then
+    cat > "$VM_ENVS" << 'VMEOF'
+# Kusogarch - Virtual machine environment overrides (auto-generated)
+# These flags enable Hyprland to run without GPU hardware acceleration.
+env = WLR_RENDERER_ALLOW_SOFTWARE,1
+env = WLR_NO_HARDWARE_CURSORS,1
+env = LIBGL_ALWAYS_SOFTWARE,true
+env = WLR_RENDERER,pixman
+VMEOF
+    fix "VM detected ($VM_TYPE) — enabled software rendering"
+else
+    if [ ! -f "$VM_ENVS" ]; then
+        echo "# Kusogarch - No VM detected, no overrides needed" > "$VM_ENVS"
+    fi
+    ok "Bare metal — no VM overrides needed"
+fi
+echo ""
+
+# --- Step 6: input-surface.conf placeholder ---
+echo -e "${BOLD}6. Surface input placeholder${NC}"
 SURFACE_INPUT="$CONFIG_DST/hypr/input-surface.conf"
 if [ ! -f "$SURFACE_INPUT" ] || [ ! -s "$SURFACE_INPUT" ]; then
     echo "# No Surface input config (desktop mode)" > "$SURFACE_INPUT"
@@ -95,8 +125,8 @@ else
 fi
 echo ""
 
-# --- Step 6: Theme symlink ---
-echo -e "${BOLD}6. Theme symlink${NC}"
+# --- Step 7: Theme symlink ---
+echo -e "${BOLD}7. Theme symlink${NC}"
 THEME_LINK="$CONFIG_DST/kusogarch/current/theme"
 THEME_SRC="$KUSOGARCH_DIR/themes/default"
 
@@ -111,8 +141,8 @@ else
 fi
 echo ""
 
-# --- Step 7: Verify all source paths ---
-echo -e "${BOLD}7. Verifying Hyprland source files${NC}"
+# --- Step 8: Verify all source paths ---
+echo -e "${BOLD}8. Verifying Hyprland source files${NC}"
 MISSING=0
 for f in \
     "$KUSOGARCH_DIR/defaults/hypr/hyprland.conf" \
@@ -121,6 +151,7 @@ for f in \
     "$CONFIG_DST/hypr/monitors.conf" \
     "$CONFIG_DST/hypr/input.conf" \
     "$CONFIG_DST/hypr/envs.conf" \
+    "$CONFIG_DST/hypr/envs-vm.conf" \
     "$CONFIG_DST/hypr/looknfeel.conf" \
     "$CONFIG_DST/hypr/windows.conf" \
     "$CONFIG_DST/hypr/autostart.conf" \
@@ -139,8 +170,8 @@ for f in \
 done
 echo ""
 
-# --- Step 8: Set bin permissions ---
-echo -e "${BOLD}8. Script permissions${NC}"
+# --- Step 9: Set bin permissions ---
+echo -e "${BOLD}9. Script permissions${NC}"
 chmod +x "$KUSOGARCH_DIR"/bin/* 2>/dev/null
 ok "All bin/ scripts executable"
 echo ""

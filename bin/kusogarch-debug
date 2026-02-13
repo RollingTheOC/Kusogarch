@@ -116,8 +116,29 @@ else
 fi
 echo ""
 
-# --- 6. GPU & Graphics ---
-echo -e "${BOLD}6. GPU & Graphics${NC}"
+# --- 6. VM Detection ---
+echo -e "${BOLD}6. Virtualization${NC}"
+if command -v systemd-detect-virt &>/dev/null; then
+    VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
+    if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
+        warn "Running in a VM: $VM_TYPE"
+        VM_ENVS="$HOME/.config/hypr/envs-vm.conf"
+        if [ -f "$VM_ENVS" ] && grep -q "WLR_RENDERER_ALLOW_SOFTWARE" "$VM_ENVS"; then
+            ok "Software rendering enabled in envs-vm.conf"
+        else
+            fail "envs-vm.conf missing or not configured for VM!"
+            info "Run: curl -sL https://raw.githubusercontent.com/RollingTheOC/Kusogarch/main/repair.sh | bash"
+        fi
+    else
+        ok "Bare metal (no VM detected)"
+    fi
+else
+    info "systemd-detect-virt not available"
+fi
+echo ""
+
+# --- 7. GPU & Graphics ---
+echo -e "${BOLD}7. GPU & Graphics${NC}"
 
 if lspci 2>/dev/null | grep -qi "VGA\|3D\|Display"; then
     info "GPU: $(lspci | grep -iE 'VGA|3D|Display' | head -1 | sed 's/.*: //')"
@@ -145,8 +166,8 @@ if lsmod | grep -qi nvidia; then
 fi
 echo ""
 
-# --- 7. Key services ---
-echo -e "${BOLD}7. Services${NC}"
+# --- 8. Key services ---
+echo -e "${BOLD}8. Services${NC}"
 
 for svc in NetworkManager bluetooth pipewire wireplumber; do
     if systemctl is-active "$svc" &>/dev/null 2>&1 || \
@@ -158,8 +179,8 @@ for svc in NetworkManager bluetooth pipewire wireplumber; do
 done
 echo ""
 
-# --- 8. Hyprland logs ---
-echo -e "${BOLD}8. Hyprland Log (last 20 lines)${NC}"
+# --- 9. Hyprland logs ---
+echo -e "${BOLD}9. Hyprland Log (last 20 lines)${NC}"
 
 HYPR_LOG="$HOME/.local/share/hyprland/hyprland.log"
 HYPR_LOG2="/tmp/hypr/$(ls /tmp/hypr/ 2>/dev/null | head -1)/hyprland.log"
@@ -180,13 +201,13 @@ else
 fi
 echo ""
 
-# --- 9. SDDM logs ---
-echo -e "${BOLD}9. SDDM Journal (last 10 lines)${NC}"
+# --- 10. SDDM logs ---
+echo -e "${BOLD}10. SDDM Journal (last 10 lines)${NC}"
 journalctl -u sddm -n 10 --no-pager 2>/dev/null || warn "Could not read SDDM journal"
 echo ""
 
-# --- 10. Quick fixes ---
-echo -e "${BOLD}10. Quick Fixes${NC}"
+# --- 11. Quick fixes ---
+echo -e "${BOLD}11. Quick Fixes${NC}"
 echo "  If Hyprland won't start, try launching manually:"
 echo "    Hyprland"
 echo ""

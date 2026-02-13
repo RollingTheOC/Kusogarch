@@ -16,6 +16,32 @@ while IFS= read -r -d '' src; do
     copy_no_overwrite "$src" "$CONFIG_DST/$relative"
 done < <(find "$CONFIG_SRC" -type f -print0)
 
+# envs-vm.conf: Hyprland always sources this file. Populate it if in a VM.
+VM_ENVS="$CONFIG_DST/hypr/envs-vm.conf"
+IS_VM="${KUSOGARCH_VM:-false}"
+if [ "$IS_VM" != "true" ]; then
+    # Also detect at deploy time in case env var isn't set
+    if command -v systemd-detect-virt &>/dev/null; then
+        VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
+        if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
+            IS_VM=true
+        fi
+    fi
+fi
+if [ "$IS_VM" = "true" ] || [ "$IS_VM" = true ]; then
+    cat > "$VM_ENVS" << 'VMEOF'
+# Kusogarch - Virtual machine environment overrides (auto-generated)
+# These flags enable Hyprland to run without GPU hardware acceleration.
+env = WLR_RENDERER_ALLOW_SOFTWARE,1
+env = WLR_NO_HARDWARE_CURSORS,1
+env = LIBGL_ALWAYS_SOFTWARE,true
+env = WLR_RENDERER,pixman
+VMEOF
+    log_step "VM detected — enabled software rendering in envs-vm.conf"
+elif [ ! -f "$VM_ENVS" ]; then
+    echo "# Kusogarch - No VM detected, no overrides needed" > "$VM_ENVS"
+fi
+
 # input-surface.conf: Hyprland always sources this file, so it MUST exist.
 # In Desktop mode, create an empty placeholder so Hyprland doesn't crash.
 SURFACE_INPUT="$CONFIG_DST/hypr/input-surface.conf"
