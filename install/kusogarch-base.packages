@@ -118,7 +118,7 @@ ttf-jetbrains-mono-nerd
 # === Theming ===
 qt5-wayland
 qt6-wayland
-kvantum
+breeze
 gnome-themes-extra
 
 # === Communication ===

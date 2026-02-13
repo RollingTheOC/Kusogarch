@@ -35,14 +35,8 @@ if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface font-name 'Noto Sans 11'
 fi
 
-# Qt5/Qt6 - use Kvantum
-mkdir -p "$HOME/.config/Kvantum"
-cat > "$HOME/.config/Kvantum/kvantum.kvconfig" << 'EOF'
-[General]
-theme=KvDark
-EOF
-
-# KDE color scheme (Catppuccin Mocha) — Dolphin and other KDE apps read this directly
+# KDE/Qt color scheme (Catppuccin Mocha)
+# Breeze style reads kdeglobals for colors — no Kvantum override needed
 cat > "$HOME/.config/kdeglobals" << 'EOF'
 [General]
 ColorScheme=CatppuccinMocha
