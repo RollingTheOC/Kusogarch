@@ -1,0 +1,11 @@
+@define-color bar-bg rgba(46, 52, 64, 0.85);
+@define-color bar-fg #d8dee9;
+@define-color module-bg rgba(59, 66, 82, 0.8);
+@define-color module-fg #d8dee9;
+@define-color workspace-fg #4c566a;
+@define-color workspace-active-bg #88c0d0;
+@define-color workspace-active-fg #2e3440;
+@define-color accent #88c0d0;
+@define-color warning #ebcb8b;
+@define-color critical #bf616a;
+@define-color success #a3be8c;

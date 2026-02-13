@@ -1,0 +1,62 @@
+#!/bin/bash
+# kusogarch-menu-keybindings - Display searchable keybindings reference
+# Invoked via Super+K
+
+# Try to get live bindings from Hyprland
+if command -v hyprctl &>/dev/null && hyprctl binds -j &>/dev/null 2>&1; then
+    hyprctl binds -j | jq -r '.[] |
+        (if .modmask == 0 then "" elif .modmask == 64 then "SUPER" elif .modmask == 65 then "SUPER+SHIFT" elif .modmask == 68 then "SUPER+CTRL" elif .modmask == 72 then "SUPER+ALT" elif .modmask == 1 then "SHIFT" elif .modmask == 4 then "CTRL" elif .modmask == 8 then "ALT" else "MOD(\(.modmask))" end) as $mod |
+        "\($mod) + \(.key)  →  \(.description // .dispatcher)"' | \
+        sort | \
+        fzf --prompt="Keybindings > " \
+            --layout=reverse \
+            --border=rounded \
+            --height=100% \
+            --header="All Keybindings (Esc to close)" \
+            --no-info
+else
+    # Fallback: show static keybinding reference
+    cat << 'EOF' | fzf --prompt="Keybindings > " --layout=reverse --border=rounded --height=100% --header="Keybindings Reference" --no-info
+SUPER + Space          →  App Launcher (Walker)
+SUPER + Return         →  Terminal (Kitty)
+SUPER + W              →  Close Window
+SUPER + Arrow Keys     →  Move Focus
+SUPER + SHIFT + Arrow  →  Swap Windows
+SUPER + J              →  Toggle Split Direction
+SUPER + F              →  Fullscreen
+SUPER + V              →  Toggle Floating
+SUPER + P              →  Pin Window
+SUPER + 1-0            →  Switch Workspace 1-10
+SUPER + SHIFT + 1-0    →  Move Window to Workspace
+SUPER + Tab            →  Next Workspace
+SUPER + SHIFT + Tab    →  Previous Workspace
+SUPER + CTRL + Tab     →  Last Workspace
+SUPER + S              →  Toggle Scratchpad
+SUPER + ALT + S        →  Move to Scratchpad
+SUPER + B              →  Browser
+SUPER + N              →  Neovim
+SUPER + E              →  File Manager
+SUPER + T              →  System Monitor (btop)
+SUPER + D              →  Docker (lazydocker)
+SUPER + G              →  Git (lazygit)
+SUPER + K              →  Keybindings (this menu)
+SUPER + ALT + Space    →  Control Menu
+SUPER + Escape         →  Power Menu
+SUPER + CTRL + L       →  Lock Screen
+Print                  →  Screenshot (Edit)
+SHIFT + Print          →  Screenshot (Clipboard)
+CTRL + Print           →  Screenshot (Full)
+SUPER + Print          →  Color Picker
+SUPER + SHIFT + B      →  Toggle Waybar
+SUPER + CTRL + N       →  Toggle Nightlight
+SUPER + CTRL + Space   →  Next Wallpaper
+SUPER + Comma          →  Dismiss Notification
+SUPER + SHIFT + Comma  →  Dismiss All Notifications
+SUPER + I              →  System Info
+SUPER + CTRL + V       →  Clipboard History
+ALT + Tab              →  Cycle Windows
+Volume Keys            →  Volume Up/Down/Mute
+Brightness Keys        →  Brightness Up/Down
+Media Keys             →  Play/Pause/Next/Prev
+EOF
+fi

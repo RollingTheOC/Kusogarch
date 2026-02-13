@@ -1,0 +1,30 @@
+#!/bin/bash
+# kusogarch-pkg-aur-install - Interactive AUR package installer with fzf + yay
+
+if ! command -v yay &>/dev/null; then
+    echo "Error: yay is not installed. Run the Kusogarch installer first."
+    read -n 1
+    exit 1
+fi
+
+SELECTED=$(yay -Slqa 2>/dev/null | sort -u | \
+    fzf --multi \
+        --prompt="Install (AUR) > " \
+        --header="TAB to select | Enter to install | Esc to cancel" \
+        --preview='yay -Sii {1} 2>/dev/null || echo "Querying AUR..."' \
+        --preview-window='right:60%:wrap' \
+        --bind='alt-p:toggle-preview' \
+        --layout=reverse \
+        --border=rounded \
+        --height=100%
+)
+
+if [ -n "$SELECTED" ]; then
+    echo ""
+    echo "Installing from AUR: $SELECTED"
+    echo ""
+    yay -S $SELECTED
+    echo ""
+    echo "Done! Press any key to close."
+    read -n 1
+fi

@@ -1,0 +1,48 @@
+#!/bin/bash
+# kusogarch-theme-set - Activate a theme by name
+# Usage: kusogarch-theme-set <theme-name>
+
+THEME_NAME="${1:-default}"
+KUSOGARCH_DIR="${KUSOGARCH_DIR:-$HOME/.local/share/kusogarch}"
+
+# Search for theme: user themes first, then built-in
+THEME_PATH=""
+if [ -d "$HOME/.config/kusogarch/themes/$THEME_NAME" ]; then
+    THEME_PATH="$HOME/.config/kusogarch/themes/$THEME_NAME"
+elif [ -d "$KUSOGARCH_DIR/themes/$THEME_NAME" ]; then
+    THEME_PATH="$KUSOGARCH_DIR/themes/$THEME_NAME"
+else
+    echo "Error: Theme '$THEME_NAME' not found"
+    exit 1
+fi
+
+CURRENT_DIR="$HOME/.config/kusogarch/current"
+mkdir -p "$CURRENT_DIR"
+
+# Swap theme symlink
+rm -f "$CURRENT_DIR/theme"
+ln -sf "$THEME_PATH" "$CURRENT_DIR/theme"
+echo "$THEME_NAME" > "$CURRENT_DIR/theme.name"
+
+# Reload affected components
+hyprctl reload &>/dev/null &
+
+# Restart waybar
+killall waybar 2>/dev/null
+sleep 0.3
+waybar &>/dev/null &
+disown
+
+# Update wallpaper if theme includes one
+if [ -f "$THEME_PATH/wallpaper.jpg" ] || [ -f "$THEME_PATH/wallpaper.png" ]; then
+    WALLPAPER=$(ls "$THEME_PATH"/wallpaper.* 2>/dev/null | head -1)
+    if [ -n "$WALLPAPER" ]; then
+        pkill swaybg 2>/dev/null
+        sleep 0.1
+        swaybg -m fill -i "$WALLPAPER" &>/dev/null &
+        disown
+    fi
+fi
+
+echo "Theme set to: $THEME_NAME"
+notify-send "Theme" "Switched to $THEME_NAME" 2>/dev/null

@@ -1,0 +1,48 @@
+# Kusogarch - Walker App Launcher Configuration
+
+[search]
+placeholder = "Search..."
+delay = 0
+hide_icons = false
+
+[ui]
+fullscreen = false
+height = 400
+width = 600
+anchors.top = true
+anchors.left = false
+anchors.right = false
+anchors.bottom = false
+orientation = "vertical"
+window.box.orientation = "vertical"
+
+[ui.window]
+name = "walker"
+layer = "overlay"
+
+[list]
+max_entries = 10
+show_initial_entries = true
+single_click = true
+
+[builtins.applications]
+name = "applications"
+weight = 5
+switcher_only = false
+
+[builtins.runner]
+name = "runner"
+weight = 1
+
+[builtins.finder]
+name = "finder"
+weight = 3
+
+[builtins.websearch]
+name = "websearch"
+weight = 1
+
+[builtins.clipboard]
+name = "clipboard"
+weight = 2
+max_entries = 20

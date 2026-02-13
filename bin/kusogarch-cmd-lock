@@ -1,0 +1,9 @@
+#!/bin/bash
+# kusogarch-cmd-lock - Lock the screen
+
+# Only run one instance
+if pidof hyprlock &>/dev/null; then
+    exit 0
+fi
+
+hyprlock

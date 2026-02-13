@@ -1,0 +1,8 @@
+# Kusogarch Default Theme - Walker App Launcher Colors
+
+[ui.window]
+background_color = "#1e1e2e"
+
+[ui]
+color = "#cdd6f4"
+accent_color = "#89b4fa"

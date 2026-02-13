@@ -1,0 +1,5 @@
+[ui.window]
+background_color = "#282828"
+[ui]
+color = "#ebdbb2"
+accent_color = "#d79921"

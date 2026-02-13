@@ -1,0 +1,11 @@
+#!/bin/bash
+# kusogarch-toggle-nightlight - Toggle blue light filter (hyprsunset)
+
+if pidof hyprsunset &>/dev/null; then
+    killall hyprsunset
+    notify-send "Night Light" "Disabled"
+else
+    hyprsunset -t 4000 &
+    disown
+    notify-send "Night Light" "Enabled (4000K)"
+fi

@@ -1,0 +1,32 @@
+#!/bin/bash
+# kusogarch-theme-menu - Interactive theme selector
+
+KUSOGARCH_DIR="${KUSOGARCH_DIR:-$HOME/.local/share/kusogarch}"
+
+# Collect all available themes
+THEMES=""
+
+# Built-in themes
+for dir in "$KUSOGARCH_DIR/themes"/*/; do
+    [ -d "$dir" ] && THEMES="$THEMES$(basename "$dir")\n"
+done
+
+# User themes
+for dir in "$HOME/.config/kusogarch/themes"/*/; do
+    [ -d "$dir" ] && THEMES="$THEMES$(basename "$dir")\n"
+done
+
+CURRENT=$(cat "$HOME/.config/kusogarch/current/theme.name" 2>/dev/null || echo "default")
+
+SELECTED=$(echo -e "$THEMES" | sort -u | grep -v '^$' | \
+    fzf --prompt="Theme > " \
+        --header="Current: $CURRENT" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -n "$SELECTED" ]; then
+    kusogarch-theme-set "$SELECTED"
+fi

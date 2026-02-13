@@ -1,0 +1,52 @@
+#!/bin/bash
+# kusogarch-menu - Main control menu
+# Invoked via Super+Alt+Space
+
+MENU_ITEMS=(
+    "Install Package (pacman)"
+    "Install Package (AUR)"
+    "Remove Package"
+    "---"
+    "Theme Selector"
+    "Next Wallpaper"
+    "Toggle Waybar"
+    "Toggle Nightlight"
+    "---"
+    "Network Settings"
+    "Bluetooth Settings"
+    "Audio Settings"
+    "---"
+    "Keybindings Reference"
+    "System Info"
+    "---"
+    "Lock Screen"
+    "Power Menu"
+)
+
+SELECTION=$(printf '%s\n' "${MENU_ITEMS[@]}" | grep -v '^---$' | \
+    fzf --prompt="Kusogarch > " \
+        --height=100% \
+        --layout=reverse \
+        --border=rounded \
+        --margin=1 \
+        --padding=1 \
+        --no-info \
+        --header="Kusogarch Control Menu"
+)
+
+case "$SELECTION" in
+    "Install Package (pacman)")  kusogarch-pkg-install ;;
+    "Install Package (AUR)")     kusogarch-pkg-aur-install ;;
+    "Remove Package")            kusogarch-pkg-remove ;;
+    "Theme Selector")            kusogarch-theme-menu ;;
+    "Next Wallpaper")            kusogarch-cmd-wallpaper next ;;
+    "Toggle Waybar")             kusogarch-toggle-waybar ;;
+    "Toggle Nightlight")         kusogarch-toggle-nightlight ;;
+    "Network Settings")          nmtui ;;
+    "Bluetooth Settings")        bluetuith 2>/dev/null || bluetoothctl ;;
+    "Audio Settings")            pulsemixer 2>/dev/null || pamixer --list-sinks ;;
+    "Keybindings Reference")     kusogarch-menu-keybindings ;;
+    "System Info")               fastfetch; echo ""; read -n 1 -p "Press any key..." ;;
+    "Lock Screen")               hyprlock & ;;
+    "Power Menu")                kusogarch-cmd-powermenu ;;
+esac

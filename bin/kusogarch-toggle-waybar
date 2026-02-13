@@ -1,0 +1,9 @@
+#!/bin/bash
+# kusogarch-toggle-waybar - Toggle waybar visibility
+
+if pidof waybar &>/dev/null; then
+    killall waybar
+else
+    waybar &
+    disown
+fi

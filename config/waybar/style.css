@@ -1,0 +1,107 @@
+/* Kusogarch - Waybar Stylesheet */
+/* Theme colors are imported from the active theme */
+@import "../../kusogarch/current/theme/waybar.css";
+
+* {
+    font-family: "JetBrains Mono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+}
+
+window#waybar {
+    background: @bar-bg;
+    color: @bar-fg;
+    border-radius: 10px;
+}
+
+tooltip {
+    background: @module-bg;
+    color: @module-fg;
+    border: 1px solid @accent;
+    border-radius: 8px;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    color: @workspace-fg;
+    background: transparent;
+    border-radius: 6px;
+    margin: 4px 2px;
+    transition: all 0.2s ease;
+}
+
+#workspaces button:hover {
+    background: alpha(@accent, 0.3);
+    color: @bar-fg;
+}
+
+#workspaces button.active {
+    background: @workspace-active-bg;
+    color: @workspace-active-fg;
+}
+
+#workspaces button.urgent {
+    background: @critical;
+    color: @bar-bg;
+}
+
+#window {
+    padding: 0 12px;
+    color: alpha(@bar-fg, 0.7);
+    font-style: italic;
+}
+
+#clock,
+#pulseaudio,
+#network,
+#battery,
+#tray,
+#idle_inhibitor,
+#custom-power {
+    padding: 0 12px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background: @module-bg;
+    color: @module-fg;
+    transition: all 0.2s ease;
+}
+
+#clock:hover,
+#pulseaudio:hover,
+#network:hover,
+#battery:hover,
+#custom-power:hover {
+    background: alpha(@accent, 0.3);
+}
+
+#battery.warning {
+    color: @warning;
+}
+
+#battery.critical {
+    color: @critical;
+    animation: blink 1s infinite alternate;
+}
+
+@keyframes blink {
+    to { color: @bar-fg; }
+}
+
+#network.disconnected {
+    color: alpha(@bar-fg, 0.4);
+}
+
+#pulseaudio.muted {
+    color: alpha(@bar-fg, 0.4);
+}
+
+#custom-power {
+    padding: 0 10px;
+    color: @critical;
+}
+
+#idle_inhibitor.activated {
+    color: @accent;
+}

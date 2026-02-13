@@ -1,0 +1,24 @@
+#!/bin/bash
+# kusogarch-pkg-remove - Interactive package removal with fzf
+
+SELECTED=$(pacman -Qqe | sort | \
+    fzf --multi \
+        --prompt="Remove > " \
+        --header="TAB to select | Enter to remove | Esc to cancel" \
+        --preview='pacman -Qii {1} 2>/dev/null' \
+        --preview-window='right:60%:wrap' \
+        --bind='alt-p:toggle-preview' \
+        --layout=reverse \
+        --border=rounded \
+        --height=100%
+)
+
+if [ -n "$SELECTED" ]; then
+    echo ""
+    echo "Removing: $SELECTED"
+    echo ""
+    sudo pacman -Rns $SELECTED
+    echo ""
+    echo "Done! Press any key to close."
+    read -n 1
+fi

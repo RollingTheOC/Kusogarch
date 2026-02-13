@@ -1,0 +1,16 @@
+#!/bin/bash
+# kusogarch-first-run - Show welcome on first boot
+
+FLAG="$HOME/.config/kusogarch/.first-run-done"
+
+if [ -f "$FLAG" ]; then
+    exit 0
+fi
+
+sleep 2
+
+notify-send -u normal -t 15000 \
+    "Welcome to Kusogarch!" \
+    "Super+K  →  Keybindings\nSuper+Alt+Space  →  Menu\nSuper+Space  →  App Launcher\nSuper+Return  →  Terminal"
+
+touch "$FLAG"

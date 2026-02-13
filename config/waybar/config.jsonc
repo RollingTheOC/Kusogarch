@@ -1,0 +1,105 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 36,
+    "spacing": 8,
+    "margin-top": 4,
+    "margin-left": 8,
+    "margin-right": 8,
+
+    "modules-left": [
+        "hyprland/workspaces",
+        "hyprland/window"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+    "modules-right": [
+        "tray",
+        "idle_inhibitor",
+        "pulseaudio",
+        "network",
+        "battery",
+        "custom/power"
+    ],
+
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate",
+        "sort-by-number": true,
+        "active-only": false,
+        "all-outputs": false
+    },
+
+    "hyprland/window": {
+        "max-length": 40,
+        "separate-outputs": true
+    },
+
+    "clock": {
+        "format": "{:%a %b %d  %I:%M %p}",
+        "tooltip-format": "<tt>{calendar}</tt>",
+        "calendar": {
+            "mode": "month",
+            "weeks-pos": "left",
+            "format": {
+                "today": "<b><u>{}</u></b>"
+            }
+        }
+    },
+
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "󰅶",
+            "deactivated": "󰾪"
+        },
+        "tooltip-format-activated": "Idle inhibitor: ON",
+        "tooltip-format-deactivated": "Idle inhibitor: OFF"
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰖁 muted",
+        "format-icons": {
+            "headphone": "󰋋",
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "on-click": "pamixer -t",
+        "on-scroll-up": "pamixer -i 2",
+        "on-scroll-down": "pamixer -d 2",
+        "tooltip-format": "{desc}\n{volume}%"
+    },
+
+    "network": {
+        "format-wifi": "󰖩 {essid}",
+        "format-ethernet": "󰈀 {ifname}",
+        "format-disconnected": "󰖪 disconnected",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}",
+        "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
+        "on-click": "kitty -e nmtui"
+    },
+
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "tooltip-format": "{timeTo}\n{power:.1f}W"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "on-click": "kitty --class kusogarch-menu -e kusogarch-cmd-powermenu",
+        "tooltip": false
+    }
+}

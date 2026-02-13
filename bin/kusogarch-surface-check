@@ -1,0 +1,13 @@
+#!/bin/bash
+# kusogarch-surface-check - Detect if running on Surface hardware
+
+if [ -f /sys/devices/virtual/dmi/id/product_name ]; then
+    PRODUCT=$(cat /sys/devices/virtual/dmi/id/product_name)
+    if echo "$PRODUCT" | grep -qi "surface"; then
+        echo "Surface device detected: $PRODUCT"
+        exit 0
+    fi
+fi
+
+echo "Not a Surface device"
+exit 1

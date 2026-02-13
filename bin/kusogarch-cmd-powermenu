@@ -1,0 +1,19 @@
+#!/bin/bash
+# kusogarch-cmd-powermenu - Power options menu
+
+CHOICE=$(printf "Lock\nSuspend\nReboot\nShutdown\nLogout" | \
+    fzf --prompt="Power > " \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info \
+        --header="Power Menu"
+)
+
+case "$CHOICE" in
+    "Lock")     hyprlock & ;;
+    "Suspend")  systemctl suspend ;;
+    "Reboot")   systemctl reboot ;;
+    "Shutdown") systemctl poweroff ;;
+    "Logout")   hyprctl dispatch exit ;;
+esac

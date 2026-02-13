@@ -1,0 +1,125 @@
+# Kusogarch - Base Package List
+# One package per line, comments start with #
+
+# === Compositor & Desktop ===
+hyprland
+uwsm
+waybar
+sddm
+mako
+polkit-gnome
+gnome-keyring
+
+# === Hyprland Utilities ===
+hypridle
+hyprlock
+hyprpicker
+hyprsunset
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+
+# === Display & Screenshot ===
+grim
+slurp
+satty
+swaybg
+wl-clipboard
+cliphist
+
+# === Terminal ===
+kitty
+starship
+bash-completion
+
+# === Shell Utilities ===
+fzf
+zoxide
+bat
+eza
+ripgrep
+fd
+dust
+btop
+fastfetch
+jq
+tree
+unzip
+less
+man-db
+tldr
+plocate
+
+# === File Manager ===
+nautilus
+gnome-disk-utility
+gvfs-mtp
+gvfs-nfs
+gvfs-smb
+
+# === Browser ===
+chromium
+
+# === Editor ===
+neovim
+
+# === Development ===
+git
+github-cli
+docker
+docker-buildx
+docker-compose
+lazygit
+lazydocker
+
+# === Multimedia ===
+mpv
+imv
+imagemagick
+ffmpegthumbnailer
+playerctl
+pamixer
+brightnessctl
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+
+# === Networking ===
+networkmanager
+iwd
+wireless-regdb
+avahi
+nss-mdns
+whois
+inetutils
+
+# === Printing ===
+cups
+system-config-printer
+
+# === Bluetooth ===
+bluez
+bluez-utils
+
+# === Fonts ===
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+noto-fonts-extra
+ttf-cascadia-mono-nerd
+ttf-jetbrains-mono-nerd
+
+# === Theming ===
+qt5-wayland
+qt6-wayland
+kvantum
+gnome-themes-extra
+
+# === Security ===
+ufw
+
+# === System ===
+power-profiles-daemon
+plymouth
+gnome-calculator

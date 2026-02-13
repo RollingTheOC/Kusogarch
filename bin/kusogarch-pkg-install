@@ -1,0 +1,24 @@
+#!/bin/bash
+# kusogarch-pkg-install - Interactive pacman package installer with fzf
+
+SELECTED=$(pacman -Slq | sort -u | \
+    fzf --multi \
+        --prompt="Install (pacman) > " \
+        --header="TAB to select multiple | Enter to install | Esc to cancel" \
+        --preview='pacman -Sii {1} 2>/dev/null || echo "No info available"' \
+        --preview-window='right:60%:wrap' \
+        --bind='alt-p:toggle-preview' \
+        --layout=reverse \
+        --border=rounded \
+        --height=100%
+)
+
+if [ -n "$SELECTED" ]; then
+    echo ""
+    echo "Installing: $SELECTED"
+    echo ""
+    sudo pacman -S --needed $SELECTED
+    echo ""
+    echo "Done! Press any key to close."
+    read -n 1
+fi

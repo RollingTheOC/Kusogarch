@@ -1,0 +1,76 @@
+#!/bin/bash
+# kusogarch-cmd-wallpaper - Wallpaper management
+# Usage: kusogarch-cmd-wallpaper [next|set <path>]
+
+KUSOGARCH_DIR="${KUSOGARCH_DIR:-$HOME/.local/share/kusogarch}"
+WALLPAPER_DIRS=(
+    "$HOME/.config/kusogarch/current/theme"
+    "$KUSOGARCH_DIR/wallpapers"
+    "$HOME/Pictures/Wallpapers"
+)
+
+STATE_FILE="$HOME/.config/kusogarch/current/wallpaper-index"
+
+set_wallpaper() {
+    local path="$1"
+    if [ ! -f "$path" ]; then
+        echo "Wallpaper not found: $path"
+        return 1
+    fi
+
+    # Kill existing swaybg
+    pkill swaybg 2>/dev/null
+    sleep 0.1
+
+    # Set new wallpaper
+    swaybg -m fill -i "$path" &
+    disown
+
+    # Save current
+    echo "$path" > "$HOME/.config/kusogarch/current/wallpaper-path"
+
+    notify-send "Wallpaper" "$(basename "$path")"
+}
+
+case "${1:-next}" in
+    next)
+        # Collect all wallpapers
+        WALLPAPERS=()
+        for dir in "${WALLPAPER_DIRS[@]}"; do
+            if [ -d "$dir" ]; then
+                while IFS= read -r -d '' file; do
+                    WALLPAPERS+=("$file")
+                done < <(find "$dir" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.webp" \) -print0 2>/dev/null)
+            fi
+        done
+
+        if [ ${#WALLPAPERS[@]} -eq 0 ]; then
+            notify-send "Wallpaper" "No wallpapers found"
+            exit 0
+        fi
+
+        # Get current index
+        INDEX=0
+        if [ -f "$STATE_FILE" ]; then
+            INDEX=$(cat "$STATE_FILE")
+        fi
+
+        # Next
+        INDEX=$(( (INDEX + 1) % ${#WALLPAPERS[@]} ))
+        echo "$INDEX" > "$STATE_FILE"
+
+        set_wallpaper "${WALLPAPERS[$INDEX]}"
+        ;;
+
+    set)
+        if [ -n "$2" ]; then
+            set_wallpaper "$2"
+        else
+            echo "Usage: kusogarch-cmd-wallpaper set <path>"
+        fi
+        ;;
+
+    *)
+        echo "Usage: kusogarch-cmd-wallpaper [next|set <path>]"
+        ;;
+esac

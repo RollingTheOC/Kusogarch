@@ -1,0 +1,26 @@
+#!/bin/bash
+# kusogarch-cmd-screenshot - Take a screenshot with area selection and edit
+
+SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$SCREENSHOT_DIR"
+
+FILENAME="$SCREENSHOT_DIR/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+# Select area with slurp, capture with grim
+AREA=$(slurp 2>/dev/null)
+if [ -z "$AREA" ]; then
+    exit 0  # User cancelled
+fi
+
+grim -g "$AREA" "$FILENAME"
+
+# If satty is available, open for editing
+if command -v satty &>/dev/null; then
+    satty --filename "$FILENAME" --output-filename "$FILENAME"
+fi
+
+# Copy to clipboard
+wl-copy < "$FILENAME"
+
+# Notify
+notify-send -i "$FILENAME" "Screenshot saved" "$FILENAME"

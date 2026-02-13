@@ -1,0 +1,20 @@
+# Kusogarch - Surface-Specific Packages
+# Installed only when Surface mode is selected
+
+# Surface kernel and headers
+linux-surface
+linux-surface-headers
+
+# Touch and pen daemon
+iptsd
+
+# Intel microcode (most Surfaces are Intel)
+intel-ucode
+
+# Intel GPU drivers
+mesa
+vulkan-intel
+intel-media-driver
+
+# Camera support (experimental)
+libcamera
