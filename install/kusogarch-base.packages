@@ -58,6 +58,7 @@ gvfs-smb
 
 # === Browser ===
 chromium
+firefox
 
 # === Editor ===
 neovim
@@ -116,8 +117,21 @@ qt6-wayland
 kvantum
 gnome-themes-extra
 
-# === Security ===
+# === Communication ===
+discord
+
+# === Gaming ===
+steam
+
+# === Security & Privacy ===
 ufw
+bitwarden
+
+# === Office ===
+libreoffice-fresh
+
+# === Package Management ===
+flatpak
 
 # === System ===
 power-profiles-daemon

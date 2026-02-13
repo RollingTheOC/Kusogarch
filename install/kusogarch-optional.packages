@@ -1,10 +1,8 @@
 # Kusogarch - Optional Packages
 # Presented as an fzf multi-select checklist during install
 
-libreoffice-fresh
 obs-studio
 signal-desktop
-firefox
 thunderbird
 gimp
 inkscape
@@ -12,7 +10,5 @@ kdenlive
 evince
 xournalpp
 pinta
-steam
-localsend
 obsidian
 vlc
