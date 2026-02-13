@@ -35,41 +35,9 @@ if command -v gsettings &>/dev/null; then
     gsettings set org.gnome.desktop.interface font-name 'Noto Sans 11'
 fi
 
-# === Kvantum — Catppuccin Mocha theme ===
-# QT_STYLE_OVERRIDE=kvantum forces Kvantum for all Qt apps, including KDE apps
-# like Dolphin which bypass qt6ct's palette via their own KDE color management.
-mkdir -p "$HOME/.config/Kvantum"
-cat > "$HOME/.config/Kvantum/kvantum.kvconfig" << 'EOF'
-[General]
-theme=catppuccin-mocha-blue
-EOF
-
-# === Qt6ct — fallback palette for non-Kvantum contexts ===
-mkdir -p "$HOME/.config/qt6ct/colors"
-
-cat > "$HOME/.config/qt6ct/colors/CatppuccinMocha.conf" << 'EOF'
-[ColorScheme]
-active_colors=#ffcdd6f4, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536, #ffcdd6f4, #ffffffff, #ffcdd6f4, #ff1e1e2e, #ff1e1e2e, #ff11111b, #ff89b4fa, #ff1e1e2e, #ff89b4fa, #ffcba6f7, #ff181825, #ff313244, #ffcdd6f4, #ff6c7086, #ff89b4fa
-inactive_colors=#ffcdd6f4, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536, #ffcdd6f4, #ffffffff, #ffcdd6f4, #ff1e1e2e, #ff1e1e2e, #ff11111b, #ff585b70, #ffa6adc8, #ff89b4fa, #ffcba6f7, #ff181825, #ff313244, #ffcdd6f4, #ff6c7086, #ff89b4fa
-disabled_colors=#ff6c7086, #ff313244, #ff45475a, #ff3b3c50, #ff181825, #ff252536, #ff6c7086, #ff585b70, #ff6c7086, #ff1e1e2e, #ff1e1e2e, #ff11111b, #ff45475a, #ffa6adc8, #ff585b70, #ff585b70, #ff181825, #ff313244, #ffcdd6f4, #ff45475a, #ff45475a
-EOF
-
-cat > "$HOME/.config/qt6ct/qt6ct.conf" << 'EOF'
-[Appearance]
-color_scheme_path=PLACEHOLDER
-custom_palette=true
-icon_theme=breeze-dark
-standard_dialogs=default
-style=Breeze
-
-[Fonts]
-fixed="JetBrains Mono Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"
-general="Noto Sans,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Regular"
-EOF
-
-sed -i "s|PLACEHOLDER|$HOME/.config/qt6ct/colors/CatppuccinMocha.conf|" "$HOME/.config/qt6ct/qt6ct.conf"
-
-# KDE color scheme (kdeglobals) — KDE apps like Dolphin also read this
+# === KDE color scheme (kdeglobals) — fallback for KDE apps ===
+# hyprqt6engine is the primary color source (via .colors file),
+# but kdeglobals provides a fallback for any KDE app that reads it directly.
 cat > "$HOME/.config/kdeglobals" << 'EOF'
 [General]
 ColorScheme=CatppuccinMocha
