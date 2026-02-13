@@ -50,6 +50,13 @@ mkdir -p "$KUSOGARCH_DIR/bin"
 cp -r "$REPO/bin/"* "$KUSOGARCH_DIR/bin/"
 chmod +x "$KUSOGARCH_DIR/bin/"*
 
+# Resolve hyprqt6engine placeholder (~ not expanded by Qt plugins)
+HYPRQT6_CONF="$CONFIG_DIR/hypr/hyprqt6engine.conf"
+if [ -f "$HYPRQT6_CONF" ] && grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
+    sed -i "s|PLACEHOLDER_COLOR_SCHEME|$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors|" "$HYPRQT6_CONF"
+    echo "  Resolved hyprqt6engine color scheme path"
+fi
+
 # Update kdeglobals from gtk-qt.sh color values
 if [ -f "$REPO/install/config/gtk-qt.sh" ]; then
     # Extract the heredoc content and write kdeglobals

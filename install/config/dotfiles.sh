@@ -71,6 +71,14 @@ if [ -L "$THEME_LINK" ] && [ ! -e "$THEME_LINK" ]; then
     echo "default" > "$CONFIG_DST/kusogarch/current/theme.name"
 fi
 
+# Resolve hyprqt6engine color scheme path (~ is not expanded by Qt plugins)
+HYPRQT6_CONF="$CONFIG_DST/hypr/hyprqt6engine.conf"
+if [ -f "$HYPRQT6_CONF" ] && grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
+    COLORS_FILE="$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors"
+    sed -i "s|PLACEHOLDER_COLOR_SCHEME|$COLORS_FILE|" "$HYPRQT6_CONF"
+    log_step "hyprqt6engine color scheme path resolved"
+fi
+
 # Generate hyprpaper.conf with wallpaper path
 HYPRPAPER_CONF="$CONFIG_DST/hypr/hyprpaper.conf"
 WALLPAPER=""
