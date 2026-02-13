@@ -1,6 +1,6 @@
 #!/bin/bash
 # Kusogarch - Login Phase
-# Display manager and boot configuration
+# TTY autologin and boot configuration
 
 source "$KUSOGARCH_DIR/install/login/sddm.sh"
 source "$KUSOGARCH_DIR/install/login/plymouth.sh"

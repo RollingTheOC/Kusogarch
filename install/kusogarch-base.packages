@@ -5,7 +5,6 @@
 hyprland
 uwsm
 waybar
-sddm
 mako
 polkit-gnome
 gnome-keyring
@@ -117,8 +116,6 @@ ttf-jetbrains-mono-nerd
 # === Theming ===
 qt5-wayland
 qt6-wayland
-qt6-svg
-qt6-declarative
 kvantum
 gnome-themes-extra
 

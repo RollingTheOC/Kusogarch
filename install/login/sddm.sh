@@ -1,36 +1,41 @@
 #!/bin/bash
-# Kusogarch - SDDM Display Manager configuration
+# Kusogarch - TTY Autologin + Hyprland Auto-Start
+# No display manager needed — boots straight into Hyprland.
 
-log_info "Configuring SDDM display manager..."
+log_info "Configuring TTY autologin..."
 
-enable_service sddm
+# Disable any existing display manager
+for dm in sddm gdm lightdm; do
+    if systemctl is-enabled "$dm" &>/dev/null; then
+        sudo systemctl disable "$dm"
+        log_step "Disabled $dm"
+    fi
+done
 
-# Configure SDDM for Hyprland/Wayland with Catppuccin theme
-sudo mkdir -p /etc/sddm.conf.d
-cat << 'EOF' | sudo tee /etc/sddm.conf.d/kusogarch.conf >/dev/null
-[General]
-DisplayServer=x11
-
-[Theme]
-Current=catppuccin-mocha-blue
-
-[Autologin]
-User=
-Session=hyprland
+# Enable TTY1 autologin via systemd override
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
+cat << EOF | sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf >/dev/null
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin $USER %I \$TERM
 EOF
+log_step "TTY1 autologin enabled for $USER"
 
-# If disk encryption is in use, enable autologin
-# (the LUKS passphrase already authenticates the user)
-if lsblk -o TYPE 2>/dev/null | grep -q "crypt"; then
-    log_step "Disk encryption detected, enabling SDDM autologin..."
-    sudo sed -i "s/^User=$/User=$USER/" /etc/sddm.conf.d/kusogarch.conf
+# Add Hyprland auto-start to .bash_profile (runs on login shell only)
+PROFILE="$HOME/.bash_profile"
+if [ ! -f "$PROFILE" ]; then
+    touch "$PROFILE"
 fi
 
-# Fallback: if theme not installed, SDDM will use default gracefully
-if [ -d /usr/share/sddm/themes/catppuccin-mocha-blue ]; then
-    log_step "Catppuccin Mocha (blue) SDDM theme active"
-else
-    log_warn "SDDM theme not found — install catppuccin-sddm-theme-mocha from AUR"
+if ! grep -q "Hyprland" "$PROFILE"; then
+    cat >> "$PROFILE" << 'PROFEOF'
+
+# Kusogarch - Auto-start Hyprland on TTY1
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    exec Hyprland
+fi
+PROFEOF
+    log_step "Hyprland auto-start added to .bash_profile"
 fi
 
-log_success "SDDM configured"
+log_success "TTY autologin configured (no display manager)"
