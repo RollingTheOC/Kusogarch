@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Gmail
 Comment=Google Mail
-Exec=xdg-open https://mail.google.com
+Exec=chromium --app=https://mail.google.com --class=webapp-gmail
 Icon=PLACEHOLDER_ICON_DIR/gmail.png
 Type=Application
 Categories=Network;WebApp;

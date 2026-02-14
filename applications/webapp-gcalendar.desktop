@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Google Calendar
 Comment=Google Calendar
-Exec=xdg-open https://calendar.google.com
+Exec=chromium --app=https://calendar.google.com --class=webapp-gcalendar
 Icon=PLACEHOLDER_ICON_DIR/gcalendar.png
 Type=Application
 Categories=Network;WebApp;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=ChatGPT
 Comment=OpenAI ChatGPT
-Exec=xdg-open https://chatgpt.com
+Exec=chromium --app=https://chatgpt.com --class=webapp-chatgpt
 Icon=PLACEHOLDER_ICON_DIR/chatgpt.png
 Type=Application
 Categories=Network;WebApp;

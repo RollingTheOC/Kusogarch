@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Google Drive
 Comment=Google Cloud Storage
-Exec=xdg-open https://drive.google.com
+Exec=chromium --app=https://drive.google.com --class=webapp-gdrive
 Icon=PLACEHOLDER_ICON_DIR/gdrive.png
 Type=Application
 Categories=Network;WebApp;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Telegram
 Comment=Telegram Messenger
-Exec=xdg-open https://web.telegram.org
+Exec=chromium --app=https://web.telegram.org --class=webapp-telegram
 Icon=PLACEHOLDER_ICON_DIR/telegram.png
 Type=Application
 Categories=Network;WebApp;

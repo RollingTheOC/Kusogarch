@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=X (Twitter)
 Comment=X Social Platform
-Exec=xdg-open https://x.com
+Exec=chromium --app=https://x.com --class=webapp-twitter
 Icon=PLACEHOLDER_ICON_DIR/twitter.png
 Type=Application
 Categories=Network;WebApp;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Claude
 Comment=Anthropic Claude AI
-Exec=xdg-open https://claude.ai
+Exec=chromium --app=https://claude.ai --class=webapp-claude
 Icon=PLACEHOLDER_ICON_DIR/claude.png
 Type=Application
 Categories=Network;WebApp;

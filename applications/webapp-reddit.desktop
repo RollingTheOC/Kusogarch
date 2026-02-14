@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Reddit
 Comment=Reddit
-Exec=xdg-open https://reddit.com
+Exec=chromium --app=https://reddit.com --class=webapp-reddit
 Icon=PLACEHOLDER_ICON_DIR/reddit.png
 Type=Application
 Categories=Network;WebApp;

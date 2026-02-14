@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Google Maps
 Comment=Google Maps
-Exec=xdg-open https://maps.google.com
+Exec=chromium --app=https://maps.google.com --class=webapp-gmaps
 Icon=PLACEHOLDER_ICON_DIR/gmaps.png
 Type=Application
 Categories=Network;WebApp;

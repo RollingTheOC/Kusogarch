@@ -162,13 +162,12 @@ if [ -d "$APPS_SRC" ]; then
         cp "$APPS_SRC/icons/"*.png "$ICONS_DST/" 2>/dev/null
     fi
     # Copy .desktop files and resolve icon path placeholder
+    # Always overwrite webapp files to ensure chromium --app mode is current
     for desktop in "$APPS_SRC"/*.desktop; do
         [ -f "$desktop" ] || continue
         dest="$APPS_DST/$(basename "$desktop")"
-        if [ ! -f "$dest" ]; then
-            cp "$desktop" "$dest"
-            sed -i "s|PLACEHOLDER_ICON_DIR|$ICONS_DST|" "$dest"
-        fi
+        cp "$desktop" "$dest"
+        sed -i "s|PLACEHOLDER_ICON_DIR|$ICONS_DST|" "$dest"
     done
     update-desktop-database "$APPS_DST" 2>/dev/null || true
     log_step "Web app shortcuts deployed"
