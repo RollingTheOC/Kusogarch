@@ -1,0 +1,277 @@
+#!/bin/bash
+# kusogarch-theme-generate - Generate qt.colors and gtk.css from colors.toml
+# Usage: kusogarch-theme-generate <theme-directory>
+#
+# Reads colors.toml from the theme directory and produces:
+#   qt.colors  - KDE KColorScheme format (for hyprqt6engine / Qt apps)
+#   gtk.css    - GTK @define-color overrides (for GTK3/4 apps)
+
+THEME_DIR="$1"
+
+if [ -z "$THEME_DIR" ] || [ ! -d "$THEME_DIR" ]; then
+    echo "Usage: kusogarch-theme-generate <theme-directory>"
+    exit 1
+fi
+
+COLORS_TOML="$THEME_DIR/colors.toml"
+if [ ! -f "$COLORS_TOML" ]; then
+    echo "Error: No colors.toml found in $THEME_DIR"
+    exit 1
+fi
+
+# Parse a hex color from colors.toml
+get_hex() {
+    grep "^$1 = " "$COLORS_TOML" | sed 's/.*= "\(.*\)"/\1/' | head -1
+}
+
+# Convert #rrggbb to r,g,b
+hex_to_rgb() {
+    local hex="${1#\#}"
+    printf "%d,%d,%d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+# Darken a hex color by subtracting from each channel
+darken_rgb() {
+    local hex="${1#\#}"
+    local amount="$2"
+    local r=$(( 0x${hex:0:2} - amount ))
+    local g=$(( 0x${hex:2:2} - amount ))
+    local b=$(( 0x${hex:4:2} - amount ))
+    [ $r -lt 0 ] && r=0
+    [ $g -lt 0 ] && g=0
+    [ $b -lt 0 ] && b=0
+    printf "%d,%d,%d" "$r" "$g" "$b"
+}
+
+# Lighten a hex color by adding to each channel
+lighten_rgb() {
+    local hex="${1#\#}"
+    local amount="$2"
+    local r=$(( 0x${hex:0:2} + amount ))
+    local g=$(( 0x${hex:2:2} + amount ))
+    local b=$(( 0x${hex:4:2} + amount ))
+    [ $r -gt 255 ] && r=255
+    [ $g -gt 255 ] && g=255
+    [ $b -gt 255 ] && b=255
+    printf "%d,%d,%d" "$r" "$g" "$b"
+}
+
+# Read colors
+BG=$(get_hex "background")
+FG=$(get_hex "foreground")
+ACCENT=$(get_hex "accent")
+ACCENT_DIM=$(get_hex "accent_dim")
+WARNING=$(get_hex "warning")
+CRITICAL=$(get_hex "critical")
+SUCCESS=$(get_hex "success")
+INFO=$(get_hex "info")
+COLOR5=$(get_hex "color5")
+COLOR7=$(get_hex "color7")
+COLOR8=$(get_hex "color8")
+
+# Fallbacks
+[ -z "$INFO" ] && INFO="$ACCENT"
+[ -z "$COLOR5" ] && COLOR5="$ACCENT"
+[ -z "$COLOR7" ] && COLOR7="$FG"
+[ -z "$COLOR8" ] && COLOR8="$ACCENT_DIM"
+
+# Convert to RGB
+BG_RGB=$(hex_to_rgb "$BG")
+FG_RGB=$(hex_to_rgb "$FG")
+ACCENT_RGB=$(hex_to_rgb "$ACCENT")
+ACCENT_DIM_RGB=$(hex_to_rgb "$ACCENT_DIM")
+WARNING_RGB=$(hex_to_rgb "$WARNING")
+CRITICAL_RGB=$(hex_to_rgb "$CRITICAL")
+SUCCESS_RGB=$(hex_to_rgb "$SUCCESS")
+INFO_RGB=$(hex_to_rgb "$INFO")
+COLOR5_RGB=$(hex_to_rgb "$COLOR5")
+COLOR7_RGB=$(hex_to_rgb "$COLOR7")
+COLOR8_RGB=$(hex_to_rgb "$COLOR8")
+
+# Derived colors
+BG_DARKER=$(darken_rgb "$BG" 6)
+BG_LIGHTER=$(lighten_rgb "$BG" 5)
+BUTTON_BG_ALT=$(lighten_rgb "$ACCENT_DIM" 17)
+
+# Theme name from directory
+THEME_NAME=$(basename "$THEME_DIR")
+
+# === Generate qt.colors ===
+if [ ! -f "$THEME_DIR/qt.colors" ]; then
+cat > "$THEME_DIR/qt.colors" << EOF
+[ColorEffects:Disabled]
+Color=$BG_RGB
+ColorAmount=0.55
+ColorEffect=3
+ContrastAmount=0.65
+ContrastEffect=1
+IntensityAmount=0.1
+IntensityEffect=2
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=true
+Color=$BG_RGB
+ColorAmount=0.025
+ColorEffect=2
+ContrastAmount=0.1
+ContrastEffect=2
+Enable=false
+IntensityAmount=0
+IntensityEffect=0
+
+[Colors:Button]
+BackgroundAlternate=$BUTTON_BG_ALT
+BackgroundNormal=$ACCENT_DIM_RGB
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:Complementary]
+BackgroundAlternate=$BG_RGB
+BackgroundNormal=$BG_DARKER
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:Header]
+BackgroundAlternate=$BG_RGB
+BackgroundNormal=$BG_DARKER
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:Header][Inactive]
+BackgroundAlternate=$BG_RGB
+BackgroundNormal=$BG_DARKER
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:Selection]
+BackgroundAlternate=$ACCENT_RGB
+BackgroundNormal=$ACCENT_RGB
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$BG_RGB
+ForegroundInactive=$BG_RGB
+ForegroundLink=$BG_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$BG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$BG_RGB
+
+[Colors:Tooltip]
+BackgroundAlternate=$ACCENT_DIM_RGB
+BackgroundNormal=$ACCENT_DIM_RGB
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:View]
+BackgroundAlternate=$BG_LIGHTER
+BackgroundNormal=$BG_RGB
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[Colors:Window]
+BackgroundAlternate=$BG_RGB
+BackgroundNormal=$BG_DARKER
+DecorationFocus=$ACCENT_RGB
+DecorationHover=$ACCENT_DIM_RGB
+ForegroundActive=$ACCENT_RGB
+ForegroundInactive=$COLOR7_RGB
+ForegroundLink=$INFO_RGB
+ForegroundNegative=$CRITICAL_RGB
+ForegroundNeutral=$WARNING_RGB
+ForegroundNormal=$FG_RGB
+ForegroundPositive=$SUCCESS_RGB
+ForegroundVisited=$COLOR5_RGB
+
+[General]
+ColorScheme=$THEME_NAME
+Name=$THEME_NAME
+shadeSortColumn=true
+
+[KDE]
+contrast=4
+
+[WM]
+activeBackground=$BG_RGB
+activeBlend=$FG_RGB
+activeForeground=$FG_RGB
+inactiveBackground=$BG_DARKER
+inactiveBlend=$COLOR7_RGB
+inactiveForeground=$COLOR7_RGB
+EOF
+    echo "Generated: $THEME_DIR/qt.colors"
+fi
+
+# === Generate gtk.css ===
+if [ ! -f "$THEME_DIR/gtk.css" ]; then
+# Compute insensitive bg (darker than bg)
+INSENSITIVE_BG_HEX=$(printf "#%02x%02x%02x" $(echo "$BG_DARKER" | tr ',' ' '))
+
+cat > "$THEME_DIR/gtk.css" << EOF
+/* Kusogarch $THEME_NAME - GTK3/4 color overrides (auto-generated) */
+@define-color theme_bg_color $BG;
+@define-color theme_fg_color $FG;
+@define-color theme_base_color $BG;
+@define-color theme_text_color $FG;
+@define-color theme_selected_bg_color $ACCENT;
+@define-color theme_selected_fg_color $BG;
+@define-color insensitive_bg_color $INSENSITIVE_BG_HEX;
+@define-color insensitive_fg_color alpha($FG, 0.5);
+@define-color borders alpha($FG, 0.15);
+@define-color warning_color $WARNING;
+@define-color error_color $CRITICAL;
+@define-color success_color $SUCCESS;
+@define-color accent_color $ACCENT;
+@define-color accent_bg_color $ACCENT;
+@define-color accent_fg_color $BG;
+EOF
+    echo "Generated: $THEME_DIR/gtk.css"
+fi

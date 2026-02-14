@@ -1,0 +1,16 @@
+/* Kusogarch Emerald & Gold - GTK3/4 color overrides */
+@define-color theme_bg_color #003823;
+@define-color theme_fg_color #d0e8d4;
+@define-color theme_base_color #003823;
+@define-color theme_text_color #d0e8d4;
+@define-color theme_selected_bg_color #c9a227;
+@define-color theme_selected_fg_color #003823;
+@define-color insensitive_bg_color #002818;
+@define-color insensitive_fg_color alpha(#d0e8d4, 0.5);
+@define-color borders alpha(#d0e8d4, 0.15);
+@define-color warning_color #e5a84b;
+@define-color error_color #e06c75;
+@define-color success_color #50c878;
+@define-color accent_color #c9a227;
+@define-color accent_bg_color #c9a227;
+@define-color accent_fg_color #003823;

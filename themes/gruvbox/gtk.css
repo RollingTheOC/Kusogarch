@@ -1,0 +1,16 @@
+/* Kusogarch Gruvbox Dark - GTK3/4 color overrides */
+@define-color theme_bg_color #282828;
+@define-color theme_fg_color #ebdbb2;
+@define-color theme_base_color #282828;
+@define-color theme_text_color #ebdbb2;
+@define-color theme_selected_bg_color #d79921;
+@define-color theme_selected_fg_color #282828;
+@define-color insensitive_bg_color #1d2021;
+@define-color insensitive_fg_color alpha(#ebdbb2, 0.5);
+@define-color borders alpha(#ebdbb2, 0.15);
+@define-color warning_color #fe8019;
+@define-color error_color #cc241d;
+@define-color success_color #98971a;
+@define-color accent_color #d79921;
+@define-color accent_bg_color #d79921;
+@define-color accent_fg_color #282828;

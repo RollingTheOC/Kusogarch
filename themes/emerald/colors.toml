@@ -1,0 +1,30 @@
+# Emerald & Gold - Deep forest green with warm gold accents
+
+[colors]
+background = "#003823"
+foreground = "#d0e8d4"
+cursor = "#c9a227"
+accent = "#c9a227"
+accent_dim = "#0a4a35"
+warning = "#e5a84b"
+critical = "#e06c75"
+success = "#50c878"
+info = "#56b6c2"
+
+# Terminal palette
+color0 = "#0a4a35"
+color1 = "#e06c75"
+color2 = "#50c878"
+color3 = "#e5c07b"
+color4 = "#4db6ac"
+color5 = "#c792ea"
+color6 = "#56b6c2"
+color7 = "#b8c9b8"
+color8 = "#3d6b52"
+color9 = "#f38ba8"
+color10 = "#69d99b"
+color11 = "#f0d080"
+color12 = "#6dc7bd"
+color13 = "#d3a4f7"
+color14 = "#7cd6dc"
+color15 = "#d0e8d4"

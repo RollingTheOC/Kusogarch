@@ -1,5 +1,5 @@
 #!/bin/bash
-# Kusogarch - GTK/Qt theming (Catppuccin Mocha)
+# Kusogarch - GTK/Qt theming setup
 
 log_info "Configuring GTK/Qt theming..."
 
@@ -36,108 +36,12 @@ if command -v gsettings &>/dev/null; then
 fi
 
 # === KDE color scheme (kdeglobals) — fallback for KDE apps ===
-# hyprqt6engine is the primary color source (via .colors file),
-# but kdeglobals provides a fallback for any KDE app that reads it directly.
-cat > "$HOME/.config/kdeglobals" << 'EOF'
-[General]
-ColorScheme=CatppuccinMocha
-Name=Catppuccin Mocha
-font=Noto Sans,11,-1,5,50,0,0,0,0,0
-toolBarFont=Noto Sans,10,-1,5,50,0,0,0,0,0
-
-[Colors:View]
-BackgroundNormal=30,30,46
-BackgroundAlternate=35,35,52
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Window]
-BackgroundNormal=24,24,37
-BackgroundAlternate=30,30,46
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Button]
-BackgroundNormal=49,50,68
-BackgroundAlternate=69,71,90
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Selection]
-BackgroundNormal=137,180,250
-BackgroundAlternate=137,180,250
-ForegroundNormal=30,30,46
-ForegroundInactive=30,30,46
-ForegroundLink=30,30,46
-ForegroundVisited=30,30,46
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Tooltip]
-BackgroundNormal=49,50,68
-BackgroundAlternate=49,50,68
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Complementary]
-BackgroundNormal=24,24,37
-BackgroundAlternate=30,30,46
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[Colors:Header]
-BackgroundNormal=24,24,37
-BackgroundAlternate=30,30,46
-ForegroundNormal=205,214,244
-ForegroundInactive=166,173,200
-ForegroundLink=137,180,250
-ForegroundVisited=203,166,247
-ForegroundNegative=243,139,168
-ForegroundNeutral=250,179,135
-ForegroundPositive=166,227,161
-DecorationFocus=137,180,250
-DecorationHover=69,71,90
-
-[KDE]
-contrast=4
-EOF
+# hyprqt6engine is the primary color source (via .colors file).
+# kdeglobals is initialized from the default theme's qt.colors and
+# updated on theme switch by kusogarch-theme-set.
+DEFAULT_QT_COLORS="$KUSOGARCH_DIR/themes/default/qt.colors"
+if [ -f "$DEFAULT_QT_COLORS" ]; then
+    cp "$DEFAULT_QT_COLORS" "$HOME/.config/kdeglobals"
+fi
 
 log_success "GTK/Qt theming configured"

@@ -31,10 +31,10 @@ EOF
 
     # Apply wallpaper: hyprpaper IPC on bare metal, swaybg in VMs
     if systemd-detect-virt -q 2>/dev/null; then
-        pkill swaybg 2>/dev/null
-        sleep 0.1
-        swaybg -i "$path" -m fill &>/dev/null &
-        disown
+        pkill -x swaybg 2>/dev/null
+        sleep 0.3
+        # Start swaybg through Hyprland so it's a compositor-managed process
+        hyprctl dispatch exec -- swaybg -i "$path" -m fill
     else
         hyprctl hyprpaper unload all &>/dev/null
         hyprctl hyprpaper preload "$path" &>/dev/null

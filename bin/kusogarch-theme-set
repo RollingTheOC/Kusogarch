@@ -19,22 +19,54 @@ fi
 CURRENT_DIR="$HOME/.config/kusogarch/current"
 mkdir -p "$CURRENT_DIR"
 
-# Swap theme symlink
+# Auto-generate missing Qt/GTK files for user themes
+if [ -f "$THEME_PATH/colors.toml" ]; then
+    if [ ! -f "$THEME_PATH/qt.colors" ] || [ ! -f "$THEME_PATH/gtk.css" ]; then
+        kusogarch-theme-generate "$THEME_PATH" 2>/dev/null
+    fi
+fi
+
+# 1. Swap theme symlink
 rm -f "$CURRENT_DIR/theme"
 ln -sf "$THEME_PATH" "$CURRENT_DIR/theme"
 echo "$THEME_NAME" > "$CURRENT_DIR/theme.name"
 
-# Reload affected components
-hyprctl reload &>/dev/null &
+# 2. Update GTK colors (file copies — do before reload)
+if [ -f "$THEME_PATH/gtk.css" ]; then
+    mkdir -p "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-4.0"
+    cp "$THEME_PATH/gtk.css" "$HOME/.config/gtk-3.0/gtk.css"
+    cp "$THEME_PATH/gtk.css" "$HOME/.config/gtk-4.0/gtk.css"
+fi
 
-# Restart waybar
-killall waybar 2>/dev/null
-sleep 0.3
-waybar &>/dev/null &
-disown
+# 3. Update kdeglobals (fallback for KDE apps)
+if [ -f "$THEME_PATH/qt.colors" ]; then
+    cp "$THEME_PATH/qt.colors" "$HOME/.config/kdeglobals"
+fi
 
-# Update wallpaper via hyprpaper if theme includes one
-WALLPAPER=$(find "$THEME_PATH" -maxdepth 1 -type f \( -name "wallpaper.*" \) 2>/dev/null | head -1)
+# 4. Update mako notification colors
+if [ -f "$THEME_PATH/mako.conf" ]; then
+    MAKO_CONFIG="$HOME/.config/mako/config"
+    if [ -f "$MAKO_CONFIG" ]; then
+        while IFS='=' read -r key value; do
+            [ -z "$key" ] || [ "${key:0:1}" = "#" ] && continue
+            sed -i "s|^${key}=.*|${key}=${value}|" "$MAKO_CONFIG"
+        done < "$THEME_PATH/mako.conf"
+        makoctl reload 2>/dev/null
+    fi
+fi
+
+# 5. Reload Hyprland (reads theme via symlink for borders, colors, etc.)
+hyprctl reload &>/dev/null
+
+# 6. Reload waybar CSS (SIGUSR2 = reload styles without restart)
+killall -SIGUSR2 waybar 2>/dev/null
+
+# 7. Reload kitty config (SIGUSR1)
+killall -SIGUSR1 kitty 2>/dev/null
+
+# 8. Set wallpaper after reload (cmd-wallpaper has a watchdog that
+#    restarts swaybg if the reload disrupts it)
+WALLPAPER=$(find "$THEME_PATH" -maxdepth 1 -type f -name "wallpaper.*" 2>/dev/null | head -1)
 if [ -n "$WALLPAPER" ]; then
     kusogarch-cmd-wallpaper set "$WALLPAPER"
 fi

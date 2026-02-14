@@ -7,7 +7,7 @@ CONFIG_SRC="$KUSOGARCH_DIR/config"
 CONFIG_DST="$HOME/.config"
 
 # Create directories
-mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,fuzzel,kitty,mako,btop,fastfetch}
+mkdir -p "$CONFIG_DST"/{hypr/bindings,waybar,walker,fuzzel,kitty,mako,btop,fastfetch,gtk-3.0,gtk-4.0}
 mkdir -p "$CONFIG_DST"/kusogarch/{current,themes}
 
 # Deploy config files (do not overwrite existing user files)
@@ -72,11 +72,27 @@ if [ -L "$THEME_LINK" ] && [ ! -e "$THEME_LINK" ]; then
 fi
 
 # Resolve hyprqt6engine color scheme path (~ is not expanded by Qt plugins)
+# Points to symlink path so Qt colors change automatically with theme
 HYPRQT6_CONF="$CONFIG_DST/hypr/hyprqt6engine.conf"
 if [ -f "$HYPRQT6_CONF" ] && grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
-    COLORS_FILE="$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors"
-    sed -i "s|PLACEHOLDER_COLOR_SCHEME|$COLORS_FILE|" "$HYPRQT6_CONF"
-    log_step "hyprqt6engine color scheme path resolved"
+    QT_COLORS_PATH="$CONFIG_DST/kusogarch/current/theme/qt.colors"
+    sed -i "s|PLACEHOLDER_COLOR_SCHEME|$QT_COLORS_PATH|" "$HYPRQT6_CONF"
+    log_step "hyprqt6engine color scheme path resolved (via theme symlink)"
+fi
+
+# Initialize GTK theme CSS from default theme
+DEFAULT_GTK_CSS="$KUSOGARCH_DIR/themes/default/gtk.css"
+if [ -f "$DEFAULT_GTK_CSS" ]; then
+    cp "$DEFAULT_GTK_CSS" "$CONFIG_DST/gtk-3.0/gtk.css"
+    cp "$DEFAULT_GTK_CSS" "$CONFIG_DST/gtk-4.0/gtk.css"
+    log_step "GTK theme CSS initialized"
+fi
+
+# Initialize kdeglobals from default theme
+DEFAULT_QT_COLORS="$KUSOGARCH_DIR/themes/default/qt.colors"
+if [ -f "$DEFAULT_QT_COLORS" ]; then
+    cp "$DEFAULT_QT_COLORS" "$CONFIG_DST/kdeglobals"
+    log_step "kdeglobals initialized from default theme"
 fi
 
 # Generate hyprpaper.conf with wallpaper path

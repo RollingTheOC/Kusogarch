@@ -117,24 +117,32 @@ else
     echo "  (skip: no applications/ directory)"
 fi
 
-# Resolve hyprqt6engine color scheme path
-echo "[7/7] Resolving paths..."
+# Resolve hyprqt6engine color scheme path (points to theme symlink)
+echo "[7/7] Resolving paths & theme integration..."
 HYPRQT6_CONF="$CONFIG_DIR/hypr/hyprqt6engine.conf"
 if [ -f "$HYPRQT6_CONF" ]; then
-    # Always re-resolve (config may have been overwritten with placeholder)
-    COLORS_FILE="$KUSOGARCH_DIR/themes/default/catppuccin-mocha.colors"
+    QT_COLORS_PATH="$CONFIG_DIR/kusogarch/current/theme/qt.colors"
     if grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF"; then
-        sed -i "s|PLACEHOLDER_COLOR_SCHEME|$COLORS_FILE|" "$HYPRQT6_CONF"
-        echo "  Resolved color scheme: $COLORS_FILE"
+        sed -i "s|PLACEHOLDER_COLOR_SCHEME|$QT_COLORS_PATH|" "$HYPRQT6_CONF"
+        echo "  Resolved Qt color scheme to: $QT_COLORS_PATH"
     else
-        echo "  Color scheme already resolved"
+        echo "  Qt color scheme already resolved"
     fi
 fi
 
-# Update kdeglobals
-if [ -f "$REPO/install/config/gtk-qt.sh" ]; then
-    sed -n '/cat > "\$HOME\/.config\/kdeglobals"/,/^EOF$/p' "$REPO/install/config/gtk-qt.sh" \
-        | sed '1d;$d' > "$CONFIG_DIR/kdeglobals" 2>/dev/null && echo "  Updated kdeglobals" || true
+# Update kdeglobals and GTK CSS from current theme
+CURRENT_THEME="$CONFIG_DIR/kusogarch/current/theme"
+if [ -L "$CURRENT_THEME" ] && [ -e "$CURRENT_THEME" ]; then
+    if [ -f "$CURRENT_THEME/qt.colors" ]; then
+        cp "$CURRENT_THEME/qt.colors" "$CONFIG_DIR/kdeglobals"
+        echo "  Updated kdeglobals from current theme"
+    fi
+    if [ -f "$CURRENT_THEME/gtk.css" ]; then
+        mkdir -p "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0"
+        cp "$CURRENT_THEME/gtk.css" "$CONFIG_DIR/gtk-3.0/gtk.css"
+        cp "$CURRENT_THEME/gtk.css" "$CONFIG_DIR/gtk-4.0/gtk.css"
+        echo "  Updated GTK CSS from current theme"
+    fi
 fi
 
 echo ""

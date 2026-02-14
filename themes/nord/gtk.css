@@ -1,0 +1,16 @@
+/* Kusogarch Nord - GTK3/4 color overrides */
+@define-color theme_bg_color #2e3440;
+@define-color theme_fg_color #d8dee9;
+@define-color theme_base_color #2e3440;
+@define-color theme_text_color #d8dee9;
+@define-color theme_selected_bg_color #88c0d0;
+@define-color theme_selected_fg_color #2e3440;
+@define-color insensitive_bg_color #252a33;
+@define-color insensitive_fg_color alpha(#d8dee9, 0.5);
+@define-color borders alpha(#d8dee9, 0.15);
+@define-color warning_color #ebcb8b;
+@define-color error_color #bf616a;
+@define-color success_color #a3be8c;
+@define-color accent_color #88c0d0;
+@define-color accent_bg_color #88c0d0;
+@define-color accent_fg_color #2e3440;
