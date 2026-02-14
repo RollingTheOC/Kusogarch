@@ -1,0 +1,53 @@
+#!/bin/bash
+# kusogarch-docker - Interactive Docker container manager
+
+if ! command -v docker &>/dev/null; then
+    echo "Docker is not installed."
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+# List containers
+CONTAINER=$(docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}" | \
+    tail -n +2 | \
+    fzf --prompt="Docker > " \
+        --header="Select container to manage" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --preview='docker inspect {1} 2>/dev/null | head -60' \
+        --preview-window='right:50%:wrap'
+)
+
+if [ -z "$CONTAINER" ]; then
+    exit 0
+fi
+
+NAME=$(echo "$CONTAINER" | awk '{print $1}')
+
+# Check if running
+if docker ps --format '{{.Names}}' | grep -qx "$NAME"; then
+    ACTION=$(printf "Logs\nShell\nStop\nRestart\nRemove\nCancel" | \
+        fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
+else
+    ACTION=$(printf "Start\nLogs\nRemove\nCancel" | \
+        fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
+fi
+
+case "$ACTION" in
+    "Start")   docker start "$NAME" && echo "Started $NAME" ;;
+    "Stop")    docker stop "$NAME" && echo "Stopped $NAME" ;;
+    "Restart") docker restart "$NAME" && echo "Restarted $NAME" ;;
+    "Logs")    docker logs --tail 100 -f "$NAME" ;;
+    "Shell")   docker exec -it "$NAME" /bin/sh ;;
+    "Remove")
+        echo "Remove container $NAME? (y/N)"
+        read -r confirm
+        if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+            docker rm -f "$NAME" && echo "Removed $NAME"
+        fi
+        ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

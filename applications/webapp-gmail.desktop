@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Gmail
+Comment=Google Mail
+Exec=xdg-open https://mail.google.com
+Icon=web-browser
+Type=Application
+Categories=Network;WebApp;
+Keywords=email;mail;google;

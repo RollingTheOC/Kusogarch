@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Reddit
+Comment=Reddit
+Exec=xdg-open https://reddit.com
+Icon=web-browser
+Type=Application
+Categories=Network;WebApp;
+Keywords=reddit;social;forum;

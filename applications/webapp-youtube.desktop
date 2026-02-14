@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=YouTube
+Comment=YouTube Video Platform
+Exec=xdg-open https://youtube.com
+Icon=web-browser
+Type=Application
+Categories=Network;WebApp;
+Keywords=video;youtube;streaming;

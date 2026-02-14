@@ -1,0 +1,35 @@
+#!/bin/bash
+# kusogarch-cast - Screen mirror/cast via wl-mirror
+
+if ! command -v wl-mirror &>/dev/null; then
+    echo "wl-mirror is not installed."
+    echo "Install with: sudo pacman -S wl-mirror"
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+if ! command -v hyprctl &>/dev/null; then
+    echo "hyprctl not found. Are you running Hyprland?"
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+# List available outputs
+OUTPUT=$(hyprctl monitors -j | jq -r '.[] | "\(.name)  \(.width)x\(.height)  \(.description)"' | \
+    fzf --prompt="Cast > " \
+        --header="Select output to mirror" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$OUTPUT" ]; then
+    exit 0
+fi
+
+OUTPUT_NAME=$(echo "$OUTPUT" | awk '{print $1}')
+
+echo "Mirroring $OUTPUT_NAME..."
+echo "Close the wl-mirror window to stop."
+wl-mirror "$OUTPUT_NAME"

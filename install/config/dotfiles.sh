@@ -113,4 +113,16 @@ EOF
     log_step "No wallpaper found, hyprpaper.conf created empty"
 fi
 
+# Deploy web app .desktop files
+APPS_SRC="$KUSOGARCH_DIR/applications"
+APPS_DST="$HOME/.local/share/applications"
+if [ -d "$APPS_SRC" ]; then
+    mkdir -p "$APPS_DST"
+    for desktop in "$APPS_SRC"/*.desktop; do
+        [ -f "$desktop" ] || continue
+        copy_no_overwrite "$desktop" "$APPS_DST/$(basename "$desktop")"
+    done
+    log_step "Web app shortcuts deployed"
+fi
+
 log_success "Configuration files deployed"

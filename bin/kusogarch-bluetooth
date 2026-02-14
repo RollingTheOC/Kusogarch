@@ -1,0 +1,56 @@
+#!/bin/bash
+# kusogarch-bluetooth - Interactive Bluetooth device manager
+
+# Ensure bluetooth is powered on
+bluetoothctl power on &>/dev/null
+
+# Start scanning briefly
+bluetoothctl scan on &>/dev/null &
+SCAN_PID=$!
+sleep 3
+kill "$SCAN_PID" 2>/dev/null
+
+# Build device list with connection status
+DEVICE=$(bluetoothctl devices | while read -r _ mac name; do
+    if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
+        status="[connected]"
+    elif bluetoothctl info "$mac" 2>/dev/null | grep -q "Paired: yes"; then
+        status="[paired]"
+    else
+        status="[available]"
+    fi
+    printf "%-40s  %s  %s\n" "$name" "$status" "$mac"
+done | fzf --prompt="Bluetooth > " \
+        --header="Select device" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$DEVICE" ]; then
+    exit 0
+fi
+
+MAC=$(echo "$DEVICE" | awk '{print $NF}')
+NAME=$(echo "$DEVICE" | sed "s/  *\[.*//")
+
+# Action submenu
+if echo "$DEVICE" | grep -q "\[connected\]"; then
+    ACTION=$(printf "Disconnect\nTrust\nRemove\nCancel" | \
+        fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
+else
+    ACTION=$(printf "Connect\nPair\nTrust\nRemove\nCancel" | \
+        fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
+fi
+
+case "$ACTION" in
+    "Connect")    bluetoothctl connect "$MAC" ;;
+    "Disconnect") bluetoothctl disconnect "$MAC" ;;
+    "Pair")       bluetoothctl pair "$MAC" ;;
+    "Trust")      bluetoothctl trust "$MAC" ;;
+    "Remove")     bluetoothctl remove "$MAC" ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

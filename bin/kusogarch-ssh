@@ -1,0 +1,31 @@
+#!/bin/bash
+# kusogarch-ssh - Interactive SSH connection manager
+
+SSH_CONFIG="$HOME/.ssh/config"
+
+if [ ! -f "$SSH_CONFIG" ]; then
+    echo "No SSH config found at $SSH_CONFIG"
+    echo ""
+    echo "Create one with:"
+    echo "  mkdir -p ~/.ssh && touch ~/.ssh/config"
+    echo ""
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+# Parse hosts from SSH config
+HOST=$(grep -i '^Host ' "$SSH_CONFIG" | awk '{print $2}' | grep -v '[*?]' | \
+    fzf --prompt="SSH > " \
+        --header="Select host to connect" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --preview='ssh -G {1} 2>/dev/null | grep -E "^(hostname|user|port|identityfile) " | sed "s/^/  /"'
+)
+
+if [ -z "$HOST" ]; then
+    exit 0
+fi
+
+echo "Connecting to $HOST..."
+ssh "$HOST"

@@ -6,15 +6,27 @@ MENU_ITEMS=(
     "Install Package (pacman)"
     "Install Package (AUR)"
     "Remove Package"
+    "System Update"
     "---"
     "Theme Selector"
     "Next Wallpaper"
     "Toggle Waybar"
     "Toggle Nightlight"
     "---"
-    "Network Settings"
-    "Bluetooth Settings"
-    "Audio Settings"
+    "WiFi"
+    "Bluetooth"
+    "Audio Devices"
+    "USB Drives"
+    "Services"
+    "---"
+    "Docker"
+    "Git"
+    "SSH"
+    "Ports"
+    "---"
+    "Monitors"
+    "Screen Record"
+    "Screen Cast"
     "---"
     "Keybindings Reference"
     "System Info"
@@ -38,13 +50,23 @@ case "$SELECTION" in
     "Install Package (pacman)")  kusogarch-pkg-install ;;
     "Install Package (AUR)")     kusogarch-pkg-aur-install ;;
     "Remove Package")            kusogarch-pkg-remove ;;
+    "System Update")             kusogarch-update ;;
     "Theme Selector")            kusogarch-theme-menu ;;
     "Next Wallpaper")            kusogarch-cmd-wallpaper next ;;
     "Toggle Waybar")             kusogarch-toggle-waybar ;;
     "Toggle Nightlight")         kusogarch-toggle-nightlight ;;
-    "Network Settings")          nmtui ;;
-    "Bluetooth Settings")        bluetuith 2>/dev/null || bluetoothctl ;;
-    "Audio Settings")            pulsemixer 2>/dev/null || pamixer --list-sinks ;;
+    "WiFi")                      kusogarch-wifi ;;
+    "Bluetooth")                 kusogarch-bluetooth ;;
+    "Audio Devices")             kusogarch-audio ;;
+    "USB Drives")                kusogarch-usb ;;
+    "Services")                  kusogarch-services ;;
+    "Docker")                    kusogarch-docker ;;
+    "Git")                       kusogarch-git ;;
+    "SSH")                       kusogarch-ssh ;;
+    "Ports")                     kusogarch-ports ;;
+    "Monitors")                  kusogarch-monitors ;;
+    "Screen Record")             kusogarch-record ;;
+    "Screen Cast")               kusogarch-cast ;;
     "Keybindings Reference")     kusogarch-menu-keybindings ;;
     "System Info")               fastfetch; echo ""; read -n 1 -p "Press any key..." ;;
     "Lock Screen")               hyprlock & ;;

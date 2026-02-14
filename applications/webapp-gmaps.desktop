@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Google Maps
+Comment=Google Maps
+Exec=xdg-open https://maps.google.com
+Icon=web-browser
+Type=Application
+Categories=Network;WebApp;
+Keywords=maps;navigation;directions;google;

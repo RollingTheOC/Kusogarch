@@ -1,0 +1,56 @@
+#!/bin/bash
+# kusogarch-audio - Interactive audio device and volume manager (WirePlumber/PipeWire)
+
+ACTION=$(printf "Set Default Output\nSet Default Input\nAdjust Volume\nCancel" | \
+    fzf --prompt="Audio > " \
+        --header="Audio settings" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+case "$ACTION" in
+    "Set Default Output")
+        SINK=$(wpctl status | sed -n '/Sinks:/,/Sources:/p' | \
+            grep -E '^\s+[│├└]' | grep -oP '\d+\.\s+.*' | \
+            sed 's/\[vol:.*//; s/\s*$//' | \
+            fzf --prompt="Output > " \
+                --header="Select default audio output" \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$SINK" ]; then
+            SINK_ID=$(echo "$SINK" | grep -oP '^\d+')
+            wpctl set-default "$SINK_ID"
+            echo "Default output set to: $SINK"
+        fi
+        ;;
+    "Set Default Input")
+        SOURCE=$(wpctl status | sed -n '/Sources:/,/Filters:/p' | \
+            grep -E '^\s+[│├└]' | grep -oP '\d+\.\s+.*' | \
+            sed 's/\[vol:.*//; s/\s*$//' | \
+            fzf --prompt="Input > " \
+                --header="Select default audio input" \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$SOURCE" ]; then
+            SOURCE_ID=$(echo "$SOURCE" | grep -oP '^\d+')
+            wpctl set-default "$SOURCE_ID"
+            echo "Default input set to: $SOURCE"
+        fi
+        ;;
+    "Adjust Volume")
+        LEVEL=$(printf "10%%\n20%%\n30%%\n40%%\n50%%\n60%%\n70%%\n80%%\n90%%\n100%%" | \
+            fzf --prompt="Volume > " \
+                --header="Select volume level" \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$LEVEL" ]; then
+            wpctl set-volume @DEFAULT_AUDIO_SINK@ "$LEVEL"
+            echo "Volume set to $LEVEL"
+        fi
+        ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

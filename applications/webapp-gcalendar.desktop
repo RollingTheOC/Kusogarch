@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Google Calendar
+Comment=Google Calendar
+Exec=xdg-open https://calendar.google.com
+Icon=web-browser
+Type=Application
+Categories=Network;WebApp;
+Keywords=calendar;schedule;google;

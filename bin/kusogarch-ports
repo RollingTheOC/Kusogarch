@@ -1,0 +1,53 @@
+#!/bin/bash
+# kusogarch-ports - Interactive port viewer and process manager
+
+PORT_LINE=$(ss -tlnp 2>/dev/null | tail -n +2 | \
+    awk '{
+        listen=$4; proc=$6
+        split(listen, a, ":")
+        port=a[length(a)]
+        addr=listen
+        gsub(/users:\(\("/, "", proc)
+        gsub(/",pid=.*/, "", proc)
+        printf "%-8s  %-25s  %s\n", port, addr, proc
+    }' | sort -n | \
+    fzf --prompt="Ports > " \
+        --header="Listening ports (select to manage)" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$PORT_LINE" ]; then
+    exit 0
+fi
+
+PORT=$(echo "$PORT_LINE" | awk '{print $1}')
+PROC=$(echo "$PORT_LINE" | awk '{print $3}')
+
+echo "Port $PORT — Process: $PROC"
+echo ""
+
+# Find PID for this port
+PID=$(ss -tlnp "sport = :$PORT" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -1)
+
+if [ -n "$PID" ]; then
+    ACTION=$(printf "View Process Details\nKill Process (SIGTERM)\nCancel" | \
+        fzf --prompt="Port $PORT > " --layout=reverse --border=rounded --height=100% --no-info)
+    case "$ACTION" in
+        "View Process Details")
+            ps -fp "$PID" 2>/dev/null
+            ;;
+        "Kill Process (SIGTERM)")
+            echo "Kill PID $PID? (y/N)"
+            read -r confirm
+            if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                kill "$PID" && echo "Sent SIGTERM to PID $PID"
+            fi
+            ;;
+    esac
+fi
+
+echo ""
+read -n 1 -p "Press any key..."
