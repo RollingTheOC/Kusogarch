@@ -31,10 +31,14 @@ EOF
 
     # Apply wallpaper: hyprpaper IPC on bare metal, swaybg in VMs
     if systemd-detect-virt -q 2>/dev/null; then
-        pkill swaybg 2>/dev/null
-        sleep 0.1
+        # Start new swaybg before killing old one to avoid grey flash
+        OLD_PID=$(pgrep -x swaybg)
         swaybg -i "$path" -m fill &>/dev/null &
         disown
+        sleep 0.5
+        if [ -n "$OLD_PID" ]; then
+            kill $OLD_PID 2>/dev/null
+        fi
     else
         hyprctl hyprpaper unload all &>/dev/null
         hyprctl hyprpaper preload "$path" &>/dev/null
