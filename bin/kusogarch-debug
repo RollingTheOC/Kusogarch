@@ -30,17 +30,17 @@ echo ""
 # --- 2. Display server ---
 echo -e "${BOLD}2. Display Server${NC}"
 
-if systemctl is-active sddm &>/dev/null; then
-    ok "SDDM is running"
+if systemctl is-active greetd &>/dev/null; then
+    ok "greetd is running"
 else
-    fail "SDDM is NOT running"
-    info "Journal: $(journalctl -u sddm -n 5 --no-pager 2>/dev/null | tail -3)"
+    fail "greetd is NOT running"
+    info "Journal: $(journalctl -u greetd -n 5 --no-pager 2>/dev/null | tail -3)"
 fi
 
-if systemctl is-enabled sddm &>/dev/null; then
-    ok "SDDM is enabled"
+if systemctl is-enabled greetd &>/dev/null; then
+    ok "greetd is enabled"
 else
-    fail "SDDM is NOT enabled — run: sudo systemctl enable sddm"
+    fail "greetd is NOT enabled — run: sudo systemctl enable greetd"
 fi
 echo ""
 
@@ -201,9 +201,9 @@ else
 fi
 echo ""
 
-# --- 10. SDDM logs ---
-echo -e "${BOLD}10. SDDM Journal (last 10 lines)${NC}"
-journalctl -u sddm -n 10 --no-pager 2>/dev/null || warn "Could not read SDDM journal"
+# --- 10. greetd logs ---
+echo -e "${BOLD}10. greetd Journal (last 10 lines)${NC}"
+journalctl -u greetd -n 10 --no-pager 2>/dev/null || warn "Could not read greetd journal"
 echo ""
 
 # --- 11. Quick fixes ---
@@ -214,8 +214,8 @@ echo ""
 echo "  If config errors, test with a clean config:"
 echo "    Hyprland -c /dev/null"
 echo ""
-echo "  If SDDM is broken, restart it:"
-echo "    sudo systemctl restart sddm"
+echo "  If greetd is broken, restart it:"
+echo "    sudo systemctl restart greetd"
 echo ""
 echo "  If theme symlink is broken, reset it:"
 echo "    ln -sf ~/.local/share/kusogarch/themes/default ~/.config/kusogarch/current/theme"
