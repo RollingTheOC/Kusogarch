@@ -24,6 +24,7 @@ MENU_ITEMS=(
     "SSH"
     "Ports"
     "---"
+    "Power Profile"
     "Monitors"
     "Screen Record"
     "Screen Cast"
@@ -64,6 +65,7 @@ case "$SELECTION" in
     "Git")                       kusogarch-git ;;
     "SSH")                       kusogarch-ssh ;;
     "Ports")                     kusogarch-ports ;;
+    "Power Profile")             kusogarch-power-profile ;;
     "Monitors")                  kusogarch-monitors ;;
     "Screen Record")             kusogarch-record ;;
     "Screen Cast")               kusogarch-cast ;;

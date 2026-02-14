@@ -1,0 +1,41 @@
+#!/bin/bash
+# kusogarch-power-profile - Switch power profile via power-profiles-daemon
+
+if ! command -v powerprofilesctl &>/dev/null; then
+    echo "power-profiles-daemon not installed"
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+CURRENT=$(powerprofilesctl get 2>/dev/null)
+
+# Build menu with current profile marked
+PROFILES=()
+for profile in power-saver balanced performance; do
+    if powerprofilesctl list 2>/dev/null | grep -q "$profile"; then
+        if [ "$profile" = "$CURRENT" ]; then
+            PROFILES+=("$profile  [active]")
+        else
+            PROFILES+=("$profile")
+        fi
+    fi
+done
+
+CHOICE=$(printf '%s\n' "${PROFILES[@]}" | \
+    fzf --prompt="Power Profile > " \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info \
+        --header="Current: $CURRENT"
+)
+
+[ -z "$CHOICE" ] && exit 0
+
+# Strip the [active] marker if present
+PROFILE=$(echo "$CHOICE" | awk '{print $1}')
+
+if [ "$PROFILE" != "$CURRENT" ]; then
+    powerprofilesctl set "$PROFILE"
+    notify-send -t 3000 "Power Profile" "Switched to $PROFILE"
+fi
