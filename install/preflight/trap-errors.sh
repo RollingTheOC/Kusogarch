@@ -18,8 +18,8 @@ on_error() {
     log_error "Check the log at: $KUSOGARCH_LOG"
     log_to_file "FAILED at line $line_no (exit $exit_code)"
     echo ""
-    echo "You can re-run the installer after fixing the issue:"
-    echo "  bash $KUSOGARCH_DIR/install.sh"
+    echo "You can resume the installer from where it left off:"
+    echo "  bash $KUSOGARCH_DIR/install.sh --resume"
     echo ""
 }
 

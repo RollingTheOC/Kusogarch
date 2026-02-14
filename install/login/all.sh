@@ -2,7 +2,7 @@
 # Kusogarch - Login Phase
 # greetd + ReGreet greeter and boot configuration
 
-source "$KUSOGARCH_DIR/install/login/sddm.sh"
+source "$KUSOGARCH_DIR/install/login/greeter.sh"
 source "$KUSOGARCH_DIR/install/login/plymouth.sh"
 
 if [ "$KUSOGARCH_MODE" = "surface" ]; then

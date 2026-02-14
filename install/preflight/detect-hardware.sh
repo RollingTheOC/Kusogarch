@@ -82,8 +82,11 @@ export KUSOGARCH_GPU="$GPU_TYPE"
 export KUSOGARCH_CPU="$CPU_VENDOR"
 export KUSOGARCH_IS_SURFACE="$IS_SURFACE"
 
-# Save mode to file for post-install reference
+# Save all detection results for resume and post-install reference
 mkdir -p "$HOME/.config/kusogarch"
 echo "$KUSOGARCH_MODE" > "$HOME/.config/kusogarch/mode"
 echo "$KUSOGARCH_GPU" > "$HOME/.config/kusogarch/gpu"
 echo "$KUSOGARCH_VM" > "$HOME/.config/kusogarch/vm"
+echo "$KUSOGARCH_VM_TYPE" > "$HOME/.config/kusogarch/vm_type"
+echo "$KUSOGARCH_CPU" > "$HOME/.config/kusogarch/cpu"
+echo "$KUSOGARCH_IS_SURFACE" > "$HOME/.config/kusogarch/is_surface"

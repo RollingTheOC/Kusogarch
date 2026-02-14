@@ -147,3 +147,104 @@ BANNER
     echo -e "  ${BOLD}Version $(cat "$KUSOGARCH_DIR/version")${NC}"
     echo ""
 }
+
+# === Hardware detection accessors ===
+# Check env vars first (set during install), fall back to saved files (for resume/scripts)
+
+KUSOGARCH_STATE_DIR="$HOME/.config/kusogarch"
+
+is_vm() {
+    local val="${KUSOGARCH_VM:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/vm" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/vm")
+    fi
+    [ "$val" = "true" ]
+}
+
+get_vm_type() {
+    local val="${KUSOGARCH_VM_TYPE:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/vm_type" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/vm_type")
+    fi
+    echo "$val"
+}
+
+is_surface() {
+    local val="${KUSOGARCH_IS_SURFACE:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/is_surface" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/is_surface")
+    fi
+    [ "$val" = "true" ]
+}
+
+get_gpu() {
+    local val="${KUSOGARCH_GPU:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/gpu" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/gpu")
+    fi
+    echo "$val"
+}
+
+get_cpu() {
+    local val="${KUSOGARCH_CPU:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/cpu" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/cpu")
+    fi
+    echo "$val"
+}
+
+get_mode() {
+    local val="${KUSOGARCH_MODE:-}"
+    if [ -z "$val" ] && [ -f "$KUSOGARCH_STATE_DIR/mode" ]; then
+        val=$(cat "$KUSOGARCH_STATE_DIR/mode")
+    fi
+    echo "$val"
+}
+
+# === Checkpoint / Resume system ===
+
+KUSOGARCH_CHECKPOINT_FILE="$HOME/.config/kusogarch/checkpoint"
+
+# Initialize checkpoint file (clear previous state unless resuming)
+checkpoint_init() {
+    mkdir -p "$HOME/.config/kusogarch"
+    if [ "${KUSOGARCH_RESUME:-false}" != "true" ]; then
+        rm -f "$KUSOGARCH_CHECKPOINT_FILE"
+        touch "$KUSOGARCH_CHECKPOINT_FILE"
+    else
+        if [ ! -f "$KUSOGARCH_CHECKPOINT_FILE" ]; then
+            log_warn "No checkpoint file found — starting fresh install"
+            touch "$KUSOGARCH_CHECKPOINT_FILE"
+            export KUSOGARCH_RESUME=false
+        else
+            log_info "Resuming from checkpoint file"
+        fi
+    fi
+}
+
+# Mark a phase as completed
+checkpoint_mark() {
+    echo "$1" >> "$KUSOGARCH_CHECKPOINT_FILE"
+}
+
+# Check if a phase was already completed
+checkpoint_done() {
+    grep -qxF "$1" "$KUSOGARCH_CHECKPOINT_FILE" 2>/dev/null
+}
+
+# Run a phase only if not already checkpointed
+run_phase() {
+    local phase_id="$1"
+    local phase_label="$2"
+    local phase_script="$3"
+
+    if [ "${KUSOGARCH_RESUME:-false}" = "true" ] && checkpoint_done "$phase_id"; then
+        log_phase "$phase_label"
+        log_success "Already completed (skipping)"
+        return 0
+    fi
+
+    log_phase "$phase_label"
+    source "$phase_script"
+    checkpoint_mark "$phase_id"
+}

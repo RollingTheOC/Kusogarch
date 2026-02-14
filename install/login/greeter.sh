@@ -24,13 +24,8 @@ enable_service greetd
 
 # Determine cage command — add software rendering in VMs
 CAGE_CMD="cage -s -- regreet"
-IS_VM=false
-if command -v systemd-detect-virt &>/dev/null; then
-    VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
-    if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
-        IS_VM=true
-        CAGE_CMD="env WLR_RENDERER_ALLOW_SOFTWARE=1 LIBGL_ALWAYS_SOFTWARE=true cage -s -- regreet"
-    fi
+if is_vm; then
+    CAGE_CMD="env WLR_RENDERER_ALLOW_SOFTWARE=1 LIBGL_ALWAYS_SOFTWARE=true cage -s -- regreet"
 fi
 
 # greetd daemon config

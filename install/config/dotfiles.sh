@@ -18,17 +18,7 @@ done < <(find "$CONFIG_SRC" -type f -print0)
 
 # envs-vm.conf: Hyprland always sources this file. Populate it if in a VM.
 VM_ENVS="$CONFIG_DST/hypr/envs-vm.conf"
-IS_VM="${KUSOGARCH_VM:-false}"
-if [ "$IS_VM" != "true" ]; then
-    # Also detect at deploy time in case env var isn't set
-    if command -v systemd-detect-virt &>/dev/null; then
-        VM_TYPE=$(systemd-detect-virt --vm 2>/dev/null || true)
-        if [ -n "$VM_TYPE" ] && [ "$VM_TYPE" != "none" ]; then
-            IS_VM=true
-        fi
-    fi
-fi
-if [ "$IS_VM" = "true" ] || [ "$IS_VM" = true ]; then
+if is_vm; then
     cat > "$VM_ENVS" << 'VMEOF'
 # Kusogarch - Virtual machine environment overrides (auto-generated)
 # These flags enable Hyprland to run without GPU hardware acceleration.
@@ -50,18 +40,46 @@ if [ ! -f "$SURFACE_INPUT" ]; then
     log_step "Created empty input-surface.conf placeholder"
 fi
 
-# Set up default theme symlink (remove broken symlinks first)
-THEME_LINK="$CONFIG_DST/kusogarch/current/theme"
-if [ -L "$THEME_LINK" ] && [ ! -e "$THEME_LINK" ]; then
-    rm -f "$THEME_LINK"
-    log_step "Removed broken theme symlink"
+# === Theme Selection ===
+log_info "Theme selection..."
+
+# Discover available themes (directories with colors.toml, skip template)
+THEME_NAMES=()
+for theme_dir in "$KUSOGARCH_DIR/themes"/*/; do
+    [ -d "$theme_dir" ] || continue
+    theme_name=$(basename "$theme_dir")
+    [ "$theme_name" = "template" ] && continue
+    THEME_NAMES+=("$theme_name")
+done
+
+# Sort: put "default" first, then alphabetical
+THEME_LIST=("default")
+for name in $(printf '%s\n' "${THEME_NAMES[@]}" | sort); do
+    [ "$name" = "default" ] && continue
+    THEME_LIST+=("$name")
+done
+
+echo ""
+THEME_CHOICE=$(choose "Select a theme for your desktop:" "${THEME_LIST[@]}")
+CHOSEN_THEME="${THEME_LIST[$((THEME_CHOICE - 1))]}"
+log_step "Selected theme: $CHOSEN_THEME"
+
+CHOSEN_THEME_DIR="$KUSOGARCH_DIR/themes/$CHOSEN_THEME"
+
+# Auto-generate missing theme files if only colors.toml exists
+if [ -f "$CHOSEN_THEME_DIR/colors.toml" ]; then
+    if [ ! -f "$CHOSEN_THEME_DIR/hyprland.conf" ] || [ ! -f "$CHOSEN_THEME_DIR/qt.colors" ] || [ ! -f "$CHOSEN_THEME_DIR/gtk.css" ]; then
+        log_step "Generating theme files from colors.toml..."
+        "$KUSOGARCH_DIR/bin/kusogarch-theme-generate" "$CHOSEN_THEME_DIR"
+    fi
 fi
 
-if [ ! -L "$THEME_LINK" ] && [ ! -d "$THEME_LINK" ]; then
-    ln -sf "$KUSOGARCH_DIR/themes/default" "$THEME_LINK"
-    echo "default" > "$CONFIG_DST/kusogarch/current/theme.name"
-    log_step "Set default theme"
-fi
+# Set up theme symlink
+THEME_LINK="$CONFIG_DST/kusogarch/current/theme"
+rm -f "$THEME_LINK"
+ln -sf "$CHOSEN_THEME_DIR" "$THEME_LINK"
+echo "$CHOSEN_THEME" > "$CONFIG_DST/kusogarch/current/theme.name"
+log_step "Set theme: $CHOSEN_THEME"
 
 # Verify theme symlink target exists
 if [ -L "$THEME_LINK" ] && [ ! -e "$THEME_LINK" ]; then
@@ -69,6 +87,8 @@ if [ -L "$THEME_LINK" ] && [ ! -e "$THEME_LINK" ]; then
     rm -f "$THEME_LINK"
     ln -sf "$KUSOGARCH_DIR/themes/default" "$THEME_LINK"
     echo "default" > "$CONFIG_DST/kusogarch/current/theme.name"
+    CHOSEN_THEME="default"
+    CHOSEN_THEME_DIR="$KUSOGARCH_DIR/themes/default"
 fi
 
 # Resolve hyprqt6engine color scheme path (~ is not expanded by Qt plugins)
@@ -80,25 +100,27 @@ if [ -f "$HYPRQT6_CONF" ] && grep -q 'PLACEHOLDER_COLOR_SCHEME' "$HYPRQT6_CONF";
     log_step "hyprqt6engine color scheme path resolved (via theme symlink)"
 fi
 
-# Initialize GTK theme CSS from default theme
-DEFAULT_GTK_CSS="$KUSOGARCH_DIR/themes/default/gtk.css"
-if [ -f "$DEFAULT_GTK_CSS" ]; then
-    cp "$DEFAULT_GTK_CSS" "$CONFIG_DST/gtk-3.0/gtk.css"
-    cp "$DEFAULT_GTK_CSS" "$CONFIG_DST/gtk-4.0/gtk.css"
-    log_step "GTK theme CSS initialized"
+# Initialize GTK theme CSS from chosen theme
+CHOSEN_GTK_CSS="$CHOSEN_THEME_DIR/gtk.css"
+if [ -f "$CHOSEN_GTK_CSS" ]; then
+    cp "$CHOSEN_GTK_CSS" "$CONFIG_DST/gtk-3.0/gtk.css"
+    cp "$CHOSEN_GTK_CSS" "$CONFIG_DST/gtk-4.0/gtk.css"
+    log_step "GTK theme CSS initialized ($CHOSEN_THEME)"
 fi
 
-# Initialize kdeglobals from default theme
-DEFAULT_QT_COLORS="$KUSOGARCH_DIR/themes/default/qt.colors"
-if [ -f "$DEFAULT_QT_COLORS" ]; then
-    cp "$DEFAULT_QT_COLORS" "$CONFIG_DST/kdeglobals"
-    log_step "kdeglobals initialized from default theme"
+# Initialize kdeglobals from chosen theme
+CHOSEN_QT_COLORS="$CHOSEN_THEME_DIR/qt.colors"
+if [ -f "$CHOSEN_QT_COLORS" ]; then
+    cp "$CHOSEN_QT_COLORS" "$CONFIG_DST/kdeglobals"
+    log_step "kdeglobals initialized from $CHOSEN_THEME theme"
 fi
 
 # Generate hyprpaper.conf with wallpaper path
 HYPRPAPER_CONF="$CONFIG_DST/hypr/hyprpaper.conf"
 WALLPAPER=""
 for candidate in \
+    "$CHOSEN_THEME_DIR/wallpaper.png" \
+    "$CHOSEN_THEME_DIR/wallpaper.jpg" \
     "$KUSOGARCH_DIR/themes/default/wallpaper.png" \
     "$KUSOGARCH_DIR/themes/default/wallpaper.jpg" \
     "$KUSOGARCH_DIR/wallpapers"/*.jpg \
@@ -116,7 +138,7 @@ preload = $WALLPAPER
 wallpaper = ,$WALLPAPER
 splash = false
 EOF
-    if [ "$IS_VM" = true ]; then
+    if is_vm; then
         log_step "Wallpaper configured (swaybg mode — VM detected)"
     else
         log_step "Wallpaper configured (hyprpaper mode)"

@@ -28,7 +28,11 @@ echo "  │  Compositor: Hyprland"
 echo "  │  Terminal:   Kitty"
 echo "  │  Bar:        Waybar"
 echo "  │  Launcher:   Walker"
-echo "  │  Theme:      default (Surface Blue)"
+INSTALLED_THEME=$(cat "$HOME/.config/kusogarch/current/theme.name" 2>/dev/null || echo "default")
+echo "  │  Theme:      $INSTALLED_THEME"
+INSTALLED_BROWSER=$(cat "$HOME/.config/kusogarch/browser" 2>/dev/null || echo "chromium.desktop")
+echo "  │  Browser:    ${INSTALLED_BROWSER%.desktop}"
+echo "  │  Files:      Dolphin"
 echo "  └─────────────────────────────────────────┘"
 echo ""
 echo "  ┌─────────────────────────────────────────┐"
