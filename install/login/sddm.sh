@@ -48,8 +48,8 @@ log_step "greetd config written"
 # Find wallpaper for greeter background
 GREETER_BG=""
 for candidate in \
-    "$KUSOGARCH_DIR/themes/default/wallpaper.jpg" \
     "$KUSOGARCH_DIR/themes/default/wallpaper.png" \
+    "$KUSOGARCH_DIR/themes/default/wallpaper.jpg" \
     "$KUSOGARCH_DIR/wallpapers"/*.jpg; do
     if [ -f "$candidate" ]; then
         GREETER_BG="$candidate"

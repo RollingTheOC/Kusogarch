@@ -99,8 +99,8 @@ fi
 HYPRPAPER_CONF="$CONFIG_DST/hypr/hyprpaper.conf"
 WALLPAPER=""
 for candidate in \
-    "$KUSOGARCH_DIR/themes/default/wallpaper.jpg" \
     "$KUSOGARCH_DIR/themes/default/wallpaper.png" \
+    "$KUSOGARCH_DIR/themes/default/wallpaper.jpg" \
     "$KUSOGARCH_DIR/wallpapers"/*.jpg \
     "$KUSOGARCH_DIR/wallpapers"/*.png; do
     if [ -f "$candidate" ]; then

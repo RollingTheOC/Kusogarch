@@ -1,4 +1,6 @@
-# Test Theme - Midnight Rose
+# Template Theme - Midnight Rose
+# Copy this folder to create your own theme, then run:
+#   kusogarch-theme-generate <your-theme-folder> --wallpaper
 # Deep navy base with rose/pink accents
 
 [colors]
