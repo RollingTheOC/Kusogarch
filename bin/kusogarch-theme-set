@@ -55,21 +55,21 @@ if [ -f "$THEME_PATH/mako.conf" ]; then
     fi
 fi
 
-# 5. Set wallpaper BEFORE reload (swaybg is an independent Wayland client —
-#    hyprctl reload re-reads config but does not disconnect Wayland clients)
+# 5. Reload Hyprland (reads theme via symlink for borders, colors, etc.)
+hyprctl reload &>/dev/null
+
+# 6. Reload waybar CSS (SIGUSR2 = reload styles without restart)
+killall -SIGUSR2 waybar 2>/dev/null
+
+# 7. Reload kitty config (SIGUSR1)
+killall -SIGUSR1 kitty 2>/dev/null
+
+# 8. Set wallpaper after reload (cmd-wallpaper has a watchdog that
+#    restarts swaybg if the reload disrupts it)
 WALLPAPER=$(find "$THEME_PATH" -maxdepth 1 -type f -name "wallpaper.*" 2>/dev/null | head -1)
 if [ -n "$WALLPAPER" ]; then
     kusogarch-cmd-wallpaper set "$WALLPAPER"
 fi
-
-# 6. Reload Hyprland (reads theme via symlink for borders, colors, etc.)
-hyprctl reload &>/dev/null
-
-# 7. Reload waybar CSS (SIGUSR2 = reload styles without restart)
-killall -SIGUSR2 waybar 2>/dev/null
-
-# 8. Reload kitty config (SIGUSR1)
-killall -SIGUSR1 kitty 2>/dev/null
 
 echo "Theme set to: $THEME_NAME"
 notify-send "Theme" "Switched to $THEME_NAME" 2>/dev/null
