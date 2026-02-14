@@ -33,20 +33,8 @@ EOF
     if systemd-detect-virt -q 2>/dev/null; then
         pkill -x swaybg 2>/dev/null
         sleep 0.3
-        swaybg -i "$path" -m fill &>/dev/null &
-        disown
-        # Watchdog: if swaybg dies within 5s (e.g. hyprctl reload disrupts
-        # its layer surface in VMs), restart it automatically.
-        (
-            for i in 1 2 3 4 5; do
-                sleep 1
-                if ! pgrep -x swaybg &>/dev/null; then
-                    swaybg -i "$path" -m fill &>/dev/null &
-                    disown
-                fi
-            done
-        ) &
-        disown
+        # Start swaybg through Hyprland so it's a compositor-managed process
+        hyprctl dispatch exec -- swaybg -i "$path" -m fill
     else
         hyprctl hyprpaper unload all &>/dev/null
         hyprctl hyprpaper preload "$path" &>/dev/null
