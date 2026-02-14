@@ -1,0 +1,84 @@
+#!/bin/bash
+# kusogarch-dev-branch - Switch Kusogarch repo branch and re-apply configs
+# Usage: kusogarch-dev-branch [branch-name]
+
+# Find repo root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(dirname "$SCRIPT_DIR")"
+
+if [ ! -f "$REPO/version" ]; then
+    echo "Error: Can't find repo root (expected version file at $REPO/version)"
+    exit 1
+fi
+
+CURRENT=$(git -C "$REPO" branch --show-current)
+echo "=== Kusogarch Branch Switcher ==="
+echo "Repo: $REPO"
+echo "Current branch: $CURRENT"
+echo ""
+
+if [ -n "$1" ]; then
+    TARGET="$1"
+else
+    # Interactive branch picker via fzf
+    TARGET=$(git -C "$REPO" branch -a --format='%(refname:short)' | \
+        sed 's|^origin/||' | sort -u | grep -v '^HEAD$' | \
+        fzf --prompt="Branch > " \
+            --header="Current: $CURRENT" \
+            --layout=reverse \
+            --border=rounded \
+            --height=100% \
+            --no-info
+    )
+fi
+
+if [ -z "$TARGET" ]; then
+    echo "No branch selected."
+    exit 0
+fi
+
+if [ "$TARGET" = "$CURRENT" ]; then
+    echo "Already on $TARGET."
+    exit 0
+fi
+
+# Check for uncommitted changes
+if ! git -C "$REPO" diff --quiet 2>/dev/null || ! git -C "$REPO" diff --cached --quiet 2>/dev/null; then
+    echo "Warning: You have uncommitted changes."
+    echo "Stash them before switching? (y/N)"
+    read -r confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        git -C "$REPO" stash
+        echo "Changes stashed."
+    else
+        echo "Aborted."
+        exit 1
+    fi
+fi
+
+echo "Switching to: $TARGET"
+git -C "$REPO" fetch --all --prune 2>/dev/null
+
+if git -C "$REPO" show-ref --verify --quiet "refs/heads/$TARGET"; then
+    git -C "$REPO" checkout "$TARGET"
+else
+    # Try checking out from remote
+    git -C "$REPO" checkout -b "$TARGET" "origin/$TARGET" 2>/dev/null || \
+        git -C "$REPO" checkout "$TARGET"
+fi
+
+if [ $? -ne 0 ]; then
+    echo "Failed to switch branch."
+    exit 1
+fi
+
+git -C "$REPO" pull --ff-only 2>/dev/null || true
+
+echo ""
+echo "Switched to: $(git -C "$REPO" branch --show-current)"
+echo ""
+
+# Re-apply configs from new branch
+echo "Re-applying configs from new branch..."
+echo ""
+kusogarch-dev-apply "$@"
