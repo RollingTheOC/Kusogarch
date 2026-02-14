@@ -122,6 +122,7 @@ if [ -d "$APPS_SRC" ]; then
         [ -f "$desktop" ] || continue
         copy_no_overwrite "$desktop" "$APPS_DST/$(basename "$desktop")"
     done
+    update-desktop-database "$APPS_DST" 2>/dev/null || true
     log_step "Web app shortcuts deployed"
 fi
 

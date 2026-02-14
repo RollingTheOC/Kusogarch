@@ -8,6 +8,7 @@
     "margin-right": 8,
 
     "modules-left": [
+        "custom/kusogarch",
         "hyprland/workspaces",
         "hyprland/window"
     ],
@@ -95,6 +96,12 @@
             "critical": 15
         },
         "tooltip-format": "{timeTo}\n{power:.1f}W"
+    },
+
+    "custom/kusogarch": {
+        "format": "󱄅",
+        "on-click": "kitty --class kusogarch-menu -e kusogarch-menu",
+        "tooltip-format": "Kusogarch Menu"
     },
 
     "custom/power": {

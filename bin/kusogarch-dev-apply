@@ -98,6 +98,7 @@ echo "[6/7] Syncing web apps..."
 if [ -d "$REPO/applications" ]; then
     mkdir -p "$HOME/.local/share/applications"
     cp "$REPO/applications/"*.desktop "$HOME/.local/share/applications/" 2>/dev/null
+    update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
     COUNT=$(ls "$REPO/applications/"*.desktop 2>/dev/null | wc -l)
     echo "  Synced $COUNT web app shortcuts"
 else
