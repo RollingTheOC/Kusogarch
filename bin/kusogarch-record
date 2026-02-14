@@ -1,0 +1,53 @@
+#!/bin/bash
+# kusogarch-record - Screen recording via wf-recorder
+
+if ! command -v wf-recorder &>/dev/null; then
+    echo "wf-recorder is not installed."
+    echo "Install with: sudo pacman -S wf-recorder"
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+OUTDIR="$HOME/Videos"
+mkdir -p "$OUTDIR"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+OUTFILE="$OUTDIR/recording_$TIMESTAMP.mp4"
+
+MODE=$(printf "Full Screen\nSelect Region\nCancel" | \
+    fzf --prompt="Record > " \
+        --header="Screen recording mode" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+case "$MODE" in
+    "Full Screen")
+        echo "Recording full screen..."
+        echo "Press Ctrl+C to stop."
+        echo "Saving to: $OUTFILE"
+        echo ""
+        wf-recorder -f "$OUTFILE"
+        echo ""
+        echo "Recording saved: $OUTFILE"
+        ;;
+    "Select Region")
+        echo "Select a region..."
+        GEOMETRY=$(slurp)
+        if [ -n "$GEOMETRY" ]; then
+            echo "Recording region: $GEOMETRY"
+            echo "Press Ctrl+C to stop."
+            echo "Saving to: $OUTFILE"
+            echo ""
+            wf-recorder -g "$GEOMETRY" -f "$OUTFILE"
+            echo ""
+            echo "Recording saved: $OUTFILE"
+        else
+            echo "No region selected."
+        fi
+        ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

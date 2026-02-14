@@ -1,0 +1,45 @@
+#!/bin/bash
+# kusogarch-services - Interactive systemd service manager
+
+SERVICE=$(systemctl list-units --type=service --all --no-pager --no-legend | \
+    awk '{
+        name=$1; load=$2; active=$3; sub=$4
+        $1=$2=$3=$4=""; desc=$0; gsub(/^[ \t]+/, "", desc)
+        printf "%-40s  %-8s  %-8s  %s\n", name, active, sub, desc
+    }' | \
+    fzf --prompt="Services > " \
+        --header="Select service to manage" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --preview='systemctl status {1} 2>/dev/null' \
+        --preview-window='right:50%:wrap'
+)
+
+if [ -z "$SERVICE" ]; then
+    exit 0
+fi
+
+UNIT=$(echo "$SERVICE" | awk '{print $1}')
+
+# Action submenu
+ACTION=$(printf "Status\nStart\nStop\nRestart\nEnable\nDisable\nJournal Logs\nCancel" | \
+    fzf --prompt="$UNIT > " \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+case "$ACTION" in
+    "Status")       systemctl status "$UNIT" ;;
+    "Start")        sudo systemctl start "$UNIT" && echo "Started $UNIT" ;;
+    "Stop")         sudo systemctl stop "$UNIT" && echo "Stopped $UNIT" ;;
+    "Restart")      sudo systemctl restart "$UNIT" && echo "Restarted $UNIT" ;;
+    "Enable")       sudo systemctl enable "$UNIT" && echo "Enabled $UNIT" ;;
+    "Disable")      sudo systemctl disable "$UNIT" && echo "Disabled $UNIT" ;;
+    "Journal Logs") journalctl -u "$UNIT" --no-pager -n 50 ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

@@ -1,0 +1,54 @@
+#!/bin/bash
+# kusogarch-wifi - Interactive WiFi connection manager
+
+# Rescan networks
+nmcli device wifi rescan 2>/dev/null
+
+# Get list of available networks
+NETWORK=$(nmcli -t -f SSID,SIGNAL,SECURITY device wifi list | sort -t: -k2 -nr | \
+    awk -F: '{
+        ssid=$1; signal=$2; sec=$3
+        if (ssid == "") next
+        if (sec == "") sec="Open"
+        printf "%-30s  %3s%%  %s\n", ssid, signal, sec
+    }' | sort -u -k1,1 | \
+    fzf --prompt="WiFi > " \
+        --header="Select network to connect" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$NETWORK" ]; then
+    exit 0
+fi
+
+SSID=$(echo "$NETWORK" | awk '{print $1}')
+
+# Check if already connected
+CURRENT=$(nmcli -t -f NAME connection show --active | head -1)
+if [ "$CURRENT" = "$SSID" ]; then
+    echo "Already connected to $SSID"
+    echo ""
+    ACTION=$(printf "Disconnect\nCancel" | \
+        fzf --prompt="Action > " --layout=reverse --border=rounded --height=100% --no-info)
+    if [ "$ACTION" = "Disconnect" ]; then
+        nmcli connection down "$SSID"
+        echo "Disconnected from $SSID"
+    fi
+    read -n 1 -p "Press any key..."
+    exit 0
+fi
+
+# Check if we have a saved connection for this SSID
+if nmcli -t -f NAME connection show | grep -qx "$SSID"; then
+    echo "Connecting to saved network: $SSID"
+    nmcli connection up "$SSID" && echo "Connected!" || echo "Connection failed."
+else
+    echo "Connecting to: $SSID"
+    nmcli --ask device wifi connect "$SSID"
+fi
+
+echo ""
+read -n 1 -p "Press any key..."

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Google Drive
+Comment=Google Cloud Storage
+Exec=xdg-open https://drive.google.com
+Icon=PLACEHOLDER_ICON_DIR/gdrive.png
+Type=Application
+Categories=Network;WebApp;
+Keywords=drive;storage;files;google;

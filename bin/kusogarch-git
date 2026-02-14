@@ -1,0 +1,63 @@
+#!/bin/bash
+# kusogarch-git - Interactive Git helper menu
+
+# Check if we're in a git repo
+if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+    echo "Not in a git repository."
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+REPO=$(basename "$(git rev-parse --show-toplevel)")
+
+ACTION=$(printf "Status\nLog\nDiff\nBranch Switch\nStash\nPull\nPush\nCancel" | \
+    fzf --prompt="Git ($REPO) > " \
+        --header="Select git action" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+case "$ACTION" in
+    "Status")
+        git status
+        ;;
+    "Log")
+        git log --oneline --graph -20
+        ;;
+    "Diff")
+        git diff
+        ;;
+    "Branch Switch")
+        BRANCH=$(git branch -a --format='%(refname:short)' | \
+            fzf --prompt="Branch > " \
+                --header="Select branch" \
+                --layout=reverse \
+                --border=rounded \
+                --height=100% \
+                --preview='git log --oneline -10 {}'
+        )
+        if [ -n "$BRANCH" ]; then
+            git checkout "$BRANCH" && echo "Switched to $BRANCH"
+        fi
+        ;;
+    "Stash")
+        STASH_ACTION=$(printf "Stash Changes\nPop Latest\nList\nCancel" | \
+            fzf --prompt="Stash > " --layout=reverse --border=rounded --height=100% --no-info)
+        case "$STASH_ACTION" in
+            "Stash Changes") git stash && echo "Changes stashed" ;;
+            "Pop Latest")    git stash pop && echo "Stash popped" ;;
+            "List")          git stash list ;;
+        esac
+        ;;
+    "Pull")
+        git pull
+        ;;
+    "Push")
+        git push
+        ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."

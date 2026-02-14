@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ChatGPT
+Comment=OpenAI ChatGPT
+Exec=xdg-open https://chatgpt.com
+Icon=PLACEHOLDER_ICON_DIR/chatgpt.png
+Type=Application
+Categories=Network;WebApp;
+Keywords=ai;chat;openai;gpt;

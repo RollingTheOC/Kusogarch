@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=X (Twitter)
+Comment=X Social Platform
+Exec=xdg-open https://x.com
+Icon=PLACEHOLDER_ICON_DIR/twitter.png
+Type=Application
+Categories=Network;WebApp;
+Keywords=twitter;social;x;

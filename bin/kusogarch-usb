@@ -1,0 +1,49 @@
+#!/bin/bash
+# kusogarch-usb - Interactive USB drive mount/unmount manager
+
+# List removable block devices
+DEVICE=$(lsblk -rpo NAME,SIZE,TYPE,MOUNTPOINTS,LABEL | \
+    awk '$3 == "part" {
+        dev=$1; size=$2; mount=$4; label=$5
+        if (mount == "") mount="(not mounted)"
+        if (label == "") label=dev
+        printf "%-20s  %8s  %-20s  %s\n", label, size, mount, dev
+    }' | \
+    fzf --prompt="USB > " \
+        --header="Select drive (TAB to select)" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$DEVICE" ]; then
+    exit 0
+fi
+
+DEV=$(echo "$DEVICE" | awk '{print $NF}')
+LABEL=$(echo "$DEVICE" | awk '{print $1}')
+
+# Check if mounted
+if echo "$DEVICE" | grep -q "(not mounted)"; then
+    echo "Mounting $LABEL ($DEV)..."
+    udisksctl mount -b "$DEV" && echo "Mounted!" || echo "Mount failed."
+else
+    ACTION=$(printf "Unmount\nOpen in File Manager\nCancel" | \
+        fzf --prompt="$LABEL > " --layout=reverse --border=rounded --height=100% --no-info)
+    case "$ACTION" in
+        "Unmount")
+            udisksctl unmount -b "$DEV" && echo "Unmounted!" || echo "Unmount failed."
+            ;;
+        "Open in File Manager")
+            MOUNT=$(lsblk -rpo NAME,MOUNTPOINTS "$DEV" | awk 'NR==1{print $2}')
+            if [ -n "$MOUNT" ] && [ -d "$MOUNT" ]; then
+                dolphin "$MOUNT" &
+                disown
+            fi
+            ;;
+    esac
+fi
+
+echo ""
+read -n 1 -p "Press any key..."

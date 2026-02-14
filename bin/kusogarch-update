@@ -1,0 +1,35 @@
+#!/bin/bash
+# kusogarch-update - Full system update (pacman + AUR)
+
+echo "=== Kusogarch System Update ==="
+echo ""
+
+# Pacman update
+echo "[1/2] Updating official packages..."
+echo ""
+sudo pacman -Syu
+PACMAN_STATUS=$?
+echo ""
+
+# AUR update (if yay is available)
+if command -v yay &>/dev/null; then
+    echo "[2/2] Updating AUR packages..."
+    echo ""
+    yay -Sua
+    YAY_STATUS=$?
+    echo ""
+else
+    echo "[2/2] Skipping AUR (yay not installed)"
+    YAY_STATUS=0
+fi
+
+# Summary
+echo "=== Update Complete ==="
+if [ $PACMAN_STATUS -eq 0 ] && [ $YAY_STATUS -eq 0 ]; then
+    echo "All packages up to date."
+else
+    echo "Some updates may have failed. Check output above."
+fi
+
+echo ""
+read -n 1 -p "Press any key to close..."

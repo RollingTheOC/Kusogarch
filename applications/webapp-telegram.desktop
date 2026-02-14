@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Telegram
+Comment=Telegram Messenger
+Exec=xdg-open https://web.telegram.org
+Icon=PLACEHOLDER_ICON_DIR/telegram.png
+Type=Application
+Categories=Network;WebApp;
+Keywords=telegram;chat;messaging;

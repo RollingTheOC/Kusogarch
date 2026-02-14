@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Google Docs
+Comment=Google Documents
+Exec=xdg-open https://docs.google.com
+Icon=PLACEHOLDER_ICON_DIR/gdocs.png
+Type=Application
+Categories=Network;WebApp;
+Keywords=docs;documents;google;word;

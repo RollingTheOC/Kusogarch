@@ -1,0 +1,76 @@
+#!/bin/bash
+# kusogarch-monitors - Interactive monitor configuration via Hyprland
+
+if ! command -v hyprctl &>/dev/null; then
+    echo "hyprctl not found. Are you running Hyprland?"
+    read -n 1 -p "Press any key..."
+    exit 1
+fi
+
+# List monitors
+MONITOR=$(hyprctl monitors -j | jq -r '.[] | "\(.name)  \(.width)x\(.height)@\(.refreshRate)Hz  scale:\(.scale)  \(.description)"' | \
+    fzf --prompt="Monitors > " \
+        --header="Select monitor to configure" \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+if [ -z "$MONITOR" ]; then
+    exit 0
+fi
+
+MON_NAME=$(echo "$MONITOR" | awk '{print $1}')
+
+ACTION=$(printf "Change Resolution\nChange Scale\nMirror\nInfo\nCancel" | \
+    fzf --prompt="$MON_NAME > " \
+        --layout=reverse \
+        --border=rounded \
+        --height=100% \
+        --no-info
+)
+
+case "$ACTION" in
+    "Change Resolution")
+        # Get available modes
+        MODE=$(hyprctl monitors -j | jq -r --arg name "$MON_NAME" \
+            '.[] | select(.name==$name) | .availableModes[]' | \
+            fzf --prompt="Resolution > " \
+                --header="Select resolution" \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$MODE" ]; then
+            hyprctl keyword monitor "$MON_NAME,$MODE,auto,1"
+            echo "Set $MON_NAME to $MODE"
+        fi
+        ;;
+    "Change Scale")
+        SCALE=$(printf "1\n1.25\n1.5\n1.75\n2" | \
+            fzf --prompt="Scale > " \
+                --header="Select scale factor" \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$SCALE" ]; then
+            hyprctl keyword monitor "$MON_NAME,preferred,auto,$SCALE"
+            echo "Set $MON_NAME scale to $SCALE"
+        fi
+        ;;
+    "Mirror")
+        TARGET=$(hyprctl monitors -j | jq -r --arg name "$MON_NAME" \
+            '.[] | select(.name!=$name) | .name' | \
+            fzf --prompt="Mirror to > " \
+                --layout=reverse --border=rounded --height=100% --no-info
+        )
+        if [ -n "$TARGET" ]; then
+            hyprctl keyword monitor "$MON_NAME,preferred,auto,1,mirror,$TARGET"
+            echo "Mirroring $MON_NAME to $TARGET"
+        fi
+        ;;
+    "Info")
+        hyprctl monitors -j | jq --arg name "$MON_NAME" '.[] | select(.name==$name)'
+        ;;
+esac
+
+echo ""
+read -n 1 -p "Press any key..."
