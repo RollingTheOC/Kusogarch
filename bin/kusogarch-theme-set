@@ -57,7 +57,6 @@ fi
 
 # 5. Reload Hyprland (reads theme via symlink)
 hyprctl reload &>/dev/null
-sleep 1  # hyprctl reload is async — wait for Hyprland to settle
 
 # 6. Reload waybar CSS (SIGUSR2 = reload styles without restart)
 killall -SIGUSR2 waybar 2>/dev/null
@@ -65,9 +64,21 @@ killall -SIGUSR2 waybar 2>/dev/null
 # 7. Reload kitty config (SIGUSR1)
 killall -SIGUSR1 kitty 2>/dev/null
 
-# 8. Set wallpaper if theme includes one (must be AFTER Hyprland settles)
+# 8. Set wallpaper if theme includes one
 WALLPAPER=$(find "$THEME_PATH" -maxdepth 1 -type f -name "wallpaper.*" 2>/dev/null | head -1)
-if [ -n "$WALLPAPER" ]; then
+if [ -n "$WALLPAPER" ] && systemd-detect-virt -q 2>/dev/null; then
+    # VM: swaybg gets disrupted by reload — poll until Hyprland is responsive
+    (
+        for i in $(seq 1 10); do
+            hyprctl version &>/dev/null && break
+            sleep 0.5
+        done
+        sleep 0.5  # extra settle time after Hyprland responds
+        kusogarch-cmd-wallpaper set "$WALLPAPER"
+    ) &
+    disown
+elif [ -n "$WALLPAPER" ]; then
+    # Bare metal: hyprpaper IPC is resilient, no special handling needed
     kusogarch-cmd-wallpaper set "$WALLPAPER"
 fi
 
