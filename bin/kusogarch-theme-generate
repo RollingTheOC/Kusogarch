@@ -1,15 +1,24 @@
 #!/bin/bash
-# kusogarch-theme-generate - Generate qt.colors and gtk.css from colors.toml
-# Usage: kusogarch-theme-generate <theme-directory>
+# kusogarch-theme-generate - Generate all theme files from colors.toml
+# Usage: kusogarch-theme-generate <theme-directory> [--wallpaper]
 #
-# Reads colors.toml from the theme directory and produces:
-#   qt.colors  - KDE KColorScheme format (for hyprqt6engine / Qt apps)
-#   gtk.css    - GTK @define-color overrides (for GTK3/4 apps)
+# Reads colors.toml and generates:
+#   hyprland.conf  - Hyprland borders, gaps, decoration
+#   kitty.conf     - Kitty terminal colors
+#   waybar.css     - Waybar CSS color variables
+#   walker.toml    - Walker launcher colors
+#   mako.conf      - Mako notification colors
+#   hyprlock.conf  - Hyprlock overrides (stub)
+#   qt.colors      - KDE KColorScheme (for hyprqt6engine / Qt apps)
+#   gtk.css        - GTK @define-color overrides (for GTK3/4 apps)
+#   wallpaper.png  - Generated gradient wallpaper (with --wallpaper, needs python3+PIL)
 
 THEME_DIR="$1"
+GENERATE_WALLPAPER=false
+[ "$2" = "--wallpaper" ] && GENERATE_WALLPAPER=true
 
 if [ -z "$THEME_DIR" ] || [ ! -d "$THEME_DIR" ]; then
-    echo "Usage: kusogarch-theme-generate <theme-directory>"
+    echo "Usage: kusogarch-theme-generate <theme-directory> [--wallpaper]"
     exit 1
 fi
 
@@ -19,63 +28,84 @@ if [ ! -f "$COLORS_TOML" ]; then
     exit 1
 fi
 
-# Parse a hex color from colors.toml
+# --- Color parsing helpers ---
+
 get_hex() {
     grep "^$1 = " "$COLORS_TOML" | sed 's/.*= "\(.*\)"/\1/' | head -1
 }
 
-# Convert #rrggbb to r,g,b
 hex_to_rgb() {
     local hex="${1#\#}"
     printf "%d,%d,%d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
 }
 
-# Darken a hex color by subtracting from each channel
+hex_bare() {
+    echo "${1#\#}"
+}
+
+hex_to_rgba() {
+    echo "${1#\#}${2}"
+}
+
 darken_rgb() {
-    local hex="${1#\#}"
-    local amount="$2"
-    local r=$(( 0x${hex:0:2} - amount ))
-    local g=$(( 0x${hex:2:2} - amount ))
-    local b=$(( 0x${hex:4:2} - amount ))
-    [ $r -lt 0 ] && r=0
-    [ $g -lt 0 ] && g=0
-    [ $b -lt 0 ] && b=0
+    local hex="${1#\#}"; local amount="$2"
+    local r=$(( 0x${hex:0:2} - amount )); local g=$(( 0x${hex:2:2} - amount )); local b=$(( 0x${hex:4:2} - amount ))
+    [ $r -lt 0 ] && r=0; [ $g -lt 0 ] && g=0; [ $b -lt 0 ] && b=0
     printf "%d,%d,%d" "$r" "$g" "$b"
 }
 
-# Lighten a hex color by adding to each channel
+darken_hex() {
+    local hex="${1#\#}"; local amount="$2"
+    local r=$(( 0x${hex:0:2} - amount )); local g=$(( 0x${hex:2:2} - amount )); local b=$(( 0x${hex:4:2} - amount ))
+    [ $r -lt 0 ] && r=0; [ $g -lt 0 ] && g=0; [ $b -lt 0 ] && b=0
+    printf "#%02x%02x%02x" "$r" "$g" "$b"
+}
+
 lighten_rgb() {
-    local hex="${1#\#}"
-    local amount="$2"
-    local r=$(( 0x${hex:0:2} + amount ))
-    local g=$(( 0x${hex:2:2} + amount ))
-    local b=$(( 0x${hex:4:2} + amount ))
-    [ $r -gt 255 ] && r=255
-    [ $g -gt 255 ] && g=255
-    [ $b -gt 255 ] && b=255
+    local hex="${1#\#}"; local amount="$2"
+    local r=$(( 0x${hex:0:2} + amount )); local g=$(( 0x${hex:2:2} + amount )); local b=$(( 0x${hex:4:2} + amount ))
+    [ $r -gt 255 ] && r=255; [ $g -gt 255 ] && g=255; [ $b -gt 255 ] && b=255
     printf "%d,%d,%d" "$r" "$g" "$b"
 }
 
-# Read colors
+# --- Read all colors ---
+
 BG=$(get_hex "background")
 FG=$(get_hex "foreground")
+CURSOR=$(get_hex "cursor")
 ACCENT=$(get_hex "accent")
 ACCENT_DIM=$(get_hex "accent_dim")
 WARNING=$(get_hex "warning")
 CRITICAL=$(get_hex "critical")
 SUCCESS=$(get_hex "success")
 INFO=$(get_hex "info")
-COLOR5=$(get_hex "color5")
-COLOR7=$(get_hex "color7")
-COLOR8=$(get_hex "color8")
+
+for i in $(seq 0 15); do
+    eval "COLOR${i}=\$(get_hex \"color${i}\")"
+done
 
 # Fallbacks
+[ -z "$CURSOR" ] && CURSOR="$FG"
 [ -z "$INFO" ] && INFO="$ACCENT"
+[ -z "$COLOR0" ] && COLOR0="$ACCENT_DIM"
+[ -z "$COLOR1" ] && COLOR1="$CRITICAL"
+[ -z "$COLOR2" ] && COLOR2="$SUCCESS"
+[ -z "$COLOR3" ] && COLOR3="$WARNING"
+[ -z "$COLOR4" ] && COLOR4="$INFO"
 [ -z "$COLOR5" ] && COLOR5="$ACCENT"
+[ -z "$COLOR6" ] && COLOR6="$INFO"
 [ -z "$COLOR7" ] && COLOR7="$FG"
 [ -z "$COLOR8" ] && COLOR8="$ACCENT_DIM"
+[ -z "$COLOR9" ] && COLOR9="$CRITICAL"
+[ -z "$COLOR10" ] && COLOR10="$SUCCESS"
+[ -z "$COLOR11" ] && COLOR11="$WARNING"
+[ -z "$COLOR12" ] && COLOR12="$INFO"
+[ -z "$COLOR13" ] && COLOR13="$ACCENT"
+[ -z "$COLOR14" ] && COLOR14="$INFO"
+[ -z "$COLOR15" ] && COLOR15="$FG"
 
-# Convert to RGB
+# Derived values
+THEME_NAME=$(basename "$THEME_DIR")
 BG_RGB=$(hex_to_rgb "$BG")
 FG_RGB=$(hex_to_rgb "$FG")
 ACCENT_RGB=$(hex_to_rgb "$ACCENT")
@@ -87,17 +117,134 @@ INFO_RGB=$(hex_to_rgb "$INFO")
 COLOR5_RGB=$(hex_to_rgb "$COLOR5")
 COLOR7_RGB=$(hex_to_rgb "$COLOR7")
 COLOR8_RGB=$(hex_to_rgb "$COLOR8")
-
-# Derived colors
 BG_DARKER=$(darken_rgb "$BG" 6)
 BG_LIGHTER=$(lighten_rgb "$BG" 5)
 BUTTON_BG_ALT=$(lighten_rgb "$ACCENT_DIM" 17)
+INSENSITIVE_BG=$(darken_hex "$BG" 6)
 
-# Theme name from directory
-THEME_NAME=$(basename "$THEME_DIR")
+# RGB components for waybar rgba()
+BG_HEX="${BG#\#}"
+DIM_HEX="${ACCENT_DIM#\#}"
+BG_R=$(( 16#${BG_HEX:0:2} )); BG_G=$(( 16#${BG_HEX:2:2} )); BG_B=$(( 16#${BG_HEX:4:2} ))
+DIM_R=$(( 16#${DIM_HEX:0:2} )); DIM_G=$(( 16#${DIM_HEX:2:2} )); DIM_B=$(( 16#${DIM_HEX:4:2} ))
 
-# === Generate qt.colors ===
-if [ ! -f "$THEME_DIR/qt.colors" ]; then
+echo "Generating theme: $THEME_NAME"
+
+# === 1. hyprland.conf ===
+cat > "$THEME_DIR/hyprland.conf" << EOF
+general {
+    gaps_in = 5
+    gaps_out = 10
+    border_size = 2
+    col.active_border = rgb($(hex_bare "$ACCENT"))
+    col.inactive_border = rgb($(hex_bare "$ACCENT_DIM"))
+}
+
+decoration {
+    rounding = 8
+    active_opacity = 1.0
+    inactive_opacity = 0.92
+    shadow {
+        enabled = true
+        range = 8
+        render_power = 2
+        color = rgba($(hex_to_rgba "$BG" "ee"))
+    }
+    blur {
+        enabled = true
+        size = 6
+        passes = 2
+        new_optimizations = true
+    }
+}
+
+animations {
+    enabled = true
+    bezier = smoothOut, 0.36, 0, 0.66, -0.56
+    bezier = smoothIn, 0.25, 1, 0.5, 1
+    bezier = overshot, 0.4, 0.8, 0.2, 1.2
+    animation = windows, 1, 4, overshot, slide
+    animation = windowsOut, 1, 4, smoothOut, slide
+    animation = border, 1, 10, default
+    animation = fade, 1, 5, smoothIn
+    animation = workspaces, 1, 6, default
+}
+EOF
+echo "  hyprland.conf"
+
+# === 2. kitty.conf ===
+cat > "$THEME_DIR/kitty.conf" << EOF
+foreground $FG
+background $BG
+cursor $CURSOR
+cursor_text_color $BG
+selection_foreground $BG
+selection_background $FG
+color0 $COLOR0
+color8 $COLOR8
+color1 $COLOR1
+color9 $COLOR9
+color2  $COLOR2
+color10 $COLOR10
+color3  $COLOR3
+color11 $COLOR11
+color4  $COLOR4
+color12 $COLOR12
+color5  $COLOR5
+color13 $COLOR13
+color6  $COLOR6
+color14 $COLOR14
+color7  $COLOR7
+color15 $COLOR15
+active_tab_foreground   $BG
+active_tab_background   $ACCENT
+inactive_tab_foreground $FG
+inactive_tab_background $ACCENT_DIM
+tab_bar_background      $BG
+EOF
+echo "  kitty.conf"
+
+# === 3. waybar.css ===
+cat > "$THEME_DIR/waybar.css" << EOF
+@define-color bar-bg rgba($BG_R, $BG_G, $BG_B, 0.85);
+@define-color bar-fg $FG;
+@define-color module-bg rgba($DIM_R, $DIM_G, $DIM_B, 0.8);
+@define-color module-fg $FG;
+@define-color workspace-fg $COLOR8;
+@define-color workspace-active-bg $ACCENT;
+@define-color workspace-active-fg $BG;
+@define-color accent $ACCENT;
+@define-color warning $WARNING;
+@define-color critical $CRITICAL;
+@define-color success $SUCCESS;
+EOF
+echo "  waybar.css"
+
+# === 4. walker.toml ===
+cat > "$THEME_DIR/walker.toml" << EOF
+[ui.window]
+background_color = "$BG"
+[ui]
+color = "$FG"
+accent_color = "$ACCENT"
+EOF
+echo "  walker.toml"
+
+# === 5. mako.conf ===
+cat > "$THEME_DIR/mako.conf" << EOF
+background-color=$BG
+text-color=$FG
+border-color=$ACCENT
+EOF
+echo "  mako.conf"
+
+# === 6. hyprlock.conf ===
+cat > "$THEME_DIR/hyprlock.conf" << EOF
+# $THEME_NAME - hyprlock theme overrides
+EOF
+echo "  hyprlock.conf"
+
+# === 7. qt.colors ===
 cat > "$THEME_DIR/qt.colors" << EOF
 [ColorEffects:Disabled]
 Color=$BG_RGB
@@ -247,23 +394,18 @@ inactiveBackground=$BG_DARKER
 inactiveBlend=$COLOR7_RGB
 inactiveForeground=$COLOR7_RGB
 EOF
-    echo "Generated: $THEME_DIR/qt.colors"
-fi
+echo "  qt.colors"
 
-# === Generate gtk.css ===
-if [ ! -f "$THEME_DIR/gtk.css" ]; then
-# Compute insensitive bg (darker than bg)
-INSENSITIVE_BG_HEX=$(printf "#%02x%02x%02x" $(echo "$BG_DARKER" | tr ',' ' '))
-
+# === 8. gtk.css ===
 cat > "$THEME_DIR/gtk.css" << EOF
-/* Kusogarch $THEME_NAME - GTK3/4 color overrides (auto-generated) */
+/* Kusogarch $THEME_NAME - GTK3/4 color overrides */
 @define-color theme_bg_color $BG;
 @define-color theme_fg_color $FG;
 @define-color theme_base_color $BG;
 @define-color theme_text_color $FG;
 @define-color theme_selected_bg_color $ACCENT;
 @define-color theme_selected_fg_color $BG;
-@define-color insensitive_bg_color $INSENSITIVE_BG_HEX;
+@define-color insensitive_bg_color $INSENSITIVE_BG;
 @define-color insensitive_fg_color alpha($FG, 0.5);
 @define-color borders alpha($FG, 0.15);
 @define-color warning_color $WARNING;
@@ -273,5 +415,45 @@ cat > "$THEME_DIR/gtk.css" << EOF
 @define-color accent_bg_color $ACCENT;
 @define-color accent_fg_color $BG;
 EOF
-    echo "Generated: $THEME_DIR/gtk.css"
+echo "  gtk.css"
+
+# === 9. wallpaper (optional) ===
+if $GENERATE_WALLPAPER; then
+    if command -v python3 &>/dev/null; then
+        python3 -c "
+from PIL import Image, ImageFilter
+import math
+
+def hex_to_rgb(h):
+    h = h.lstrip('#')
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+W, H = 3840, 2160
+bg = hex_to_rgb('$BG')
+accent = hex_to_rgb('$ACCENT')
+secondary = hex_to_rgb('$COLOR2')
+
+img = Image.new('RGB', (W, H), bg)
+for y in range(H):
+    for x in range(W):
+        t = (x / W * 0.6 + y / H * 0.4)
+        cx1, cy1 = W * 0.25, H * 0.7
+        cx2, cy2 = W * 0.75, H * 0.3
+        d1 = math.sqrt((x - cx1)**2 + (y - cy1)**2) / (W * 0.45)
+        d2 = math.sqrt((x - cx2)**2 + (y - cy2)**2) / (W * 0.4)
+        glow1 = max(0, 1 - d1**1.5) * 0.35
+        glow2 = max(0, 1 - d2**1.5) * 0.25
+        grad = t * 0.08
+        mix_r = bg[0]*(1-glow1-glow2-grad) + accent[0]*(glow1+grad*0.5) + secondary[0]*(glow2+grad*0.5)
+        mix_g = bg[1]*(1-glow1-glow2-grad) + accent[1]*(glow1+grad*0.5) + secondary[1]*(glow2+grad*0.5)
+        mix_b = bg[2]*(1-glow1-glow2-grad) + accent[2]*(glow1+grad*0.5) + secondary[2]*(glow2+grad*0.5)
+        img.putpixel((x, y), (int(min(255,max(0,mix_r))), int(min(255,max(0,mix_g))), int(min(255,max(0,mix_b)))))
+img = img.filter(ImageFilter.GaussianBlur(radius=3))
+img.save('$THEME_DIR/wallpaper.png', optimize=True)
+" 2>/dev/null && echo "  wallpaper.png" || echo "  wallpaper.png (failed - PIL not available?)"
+    else
+        echo "  wallpaper.png (skipped - python3 not found)"
+    fi
 fi
+
+echo "Done! Theme '$THEME_NAME' generated from colors.toml"

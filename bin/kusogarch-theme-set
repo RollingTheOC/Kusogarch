@@ -19,9 +19,9 @@ fi
 CURRENT_DIR="$HOME/.config/kusogarch/current"
 mkdir -p "$CURRENT_DIR"
 
-# Auto-generate missing Qt/GTK files for user themes
+# Auto-generate missing theme files from colors.toml
 if [ -f "$THEME_PATH/colors.toml" ]; then
-    if [ ! -f "$THEME_PATH/qt.colors" ] || [ ! -f "$THEME_PATH/gtk.css" ]; then
+    if [ ! -f "$THEME_PATH/hyprland.conf" ] || [ ! -f "$THEME_PATH/qt.colors" ] || [ ! -f "$THEME_PATH/gtk.css" ]; then
         kusogarch-theme-generate "$THEME_PATH" 2>/dev/null
     fi
 fi
