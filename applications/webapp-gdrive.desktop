@@ -2,7 +2,7 @@
 Name=Google Drive
 Comment=Google Cloud Storage
 Exec=xdg-open https://drive.google.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/gdrive.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=drive;storage;files;google;

@@ -2,7 +2,7 @@
 Name=ChatGPT
 Comment=OpenAI ChatGPT
 Exec=xdg-open https://chatgpt.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/chatgpt.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=ai;chat;openai;gpt;

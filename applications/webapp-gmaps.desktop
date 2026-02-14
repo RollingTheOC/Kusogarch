@@ -2,7 +2,7 @@
 Name=Google Maps
 Comment=Google Maps
 Exec=xdg-open https://maps.google.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/gmaps.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=maps;navigation;directions;google;

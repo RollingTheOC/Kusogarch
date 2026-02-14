@@ -93,14 +93,26 @@ else
 fi
 chmod +x "$KUSOGARCH_DIR/bin/"*
 
-# Sync web app .desktop files
+# Sync web app .desktop files and icons
 echo "[6/7] Syncing web apps..."
 if [ -d "$REPO/applications" ]; then
-    mkdir -p "$HOME/.local/share/applications"
-    cp "$REPO/applications/"*.desktop "$HOME/.local/share/applications/" 2>/dev/null
-    update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+    APPS_DST="$HOME/.local/share/applications"
+    ICONS_DST="$HOME/.local/share/icons/kusogarch"
+    mkdir -p "$APPS_DST" "$ICONS_DST"
+    # Copy icons
+    if [ -d "$REPO/applications/icons" ]; then
+        cp "$REPO/applications/icons/"*.png "$ICONS_DST/" 2>/dev/null
+    fi
+    # Copy .desktop files and resolve icon path placeholder
+    for desktop in "$REPO/applications/"*.desktop; do
+        [ -f "$desktop" ] || continue
+        dest="$APPS_DST/$(basename "$desktop")"
+        cp "$desktop" "$dest"
+        sed -i "s|PLACEHOLDER_ICON_DIR|$ICONS_DST|" "$dest"
+    done
+    update-desktop-database "$APPS_DST" 2>/dev/null || true
     COUNT=$(ls "$REPO/applications/"*.desktop 2>/dev/null | wc -l)
-    echo "  Synced $COUNT web app shortcuts"
+    echo "  Synced $COUNT web app shortcuts with icons"
 else
     echo "  (skip: no applications/ directory)"
 fi

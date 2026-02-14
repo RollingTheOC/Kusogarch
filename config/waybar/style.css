@@ -97,8 +97,23 @@ tooltip {
     color: alpha(@bar-fg, 0.4);
 }
 
+#custom-kusogarch {
+    padding: 0 12px;
+    margin: 4px 2px 4px 6px;
+    border-radius: 6px;
+    background: @module-bg;
+    color: @accent;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+#custom-kusogarch:hover {
+    background: alpha(@accent, 0.3);
+}
+
 #custom-power {
     padding: 0 10px;
+    margin-right: 6px;
     color: @critical;
 }
 

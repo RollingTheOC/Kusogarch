@@ -113,14 +113,24 @@ EOF
     log_step "No wallpaper found, hyprpaper.conf created empty"
 fi
 
-# Deploy web app .desktop files
+# Deploy web app .desktop files with icons
 APPS_SRC="$KUSOGARCH_DIR/applications"
 APPS_DST="$HOME/.local/share/applications"
+ICONS_DST="$HOME/.local/share/icons/kusogarch"
 if [ -d "$APPS_SRC" ]; then
-    mkdir -p "$APPS_DST"
+    mkdir -p "$APPS_DST" "$ICONS_DST"
+    # Copy icons
+    if [ -d "$APPS_SRC/icons" ]; then
+        cp "$APPS_SRC/icons/"*.png "$ICONS_DST/" 2>/dev/null
+    fi
+    # Copy .desktop files and resolve icon path placeholder
     for desktop in "$APPS_SRC"/*.desktop; do
         [ -f "$desktop" ] || continue
-        copy_no_overwrite "$desktop" "$APPS_DST/$(basename "$desktop")"
+        dest="$APPS_DST/$(basename "$desktop")"
+        if [ ! -f "$dest" ]; then
+            cp "$desktop" "$dest"
+            sed -i "s|PLACEHOLDER_ICON_DIR|$ICONS_DST|" "$dest"
+        fi
     done
     update-desktop-database "$APPS_DST" 2>/dev/null || true
     log_step "Web app shortcuts deployed"

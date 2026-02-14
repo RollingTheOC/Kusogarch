@@ -2,7 +2,7 @@
 Name=Claude
 Comment=Anthropic Claude AI
 Exec=xdg-open https://claude.ai
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/claude.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=ai;chat;anthropic;claude;

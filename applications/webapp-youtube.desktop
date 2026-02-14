@@ -2,7 +2,7 @@
 Name=YouTube
 Comment=YouTube Video Platform
 Exec=xdg-open https://youtube.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/youtube.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=video;youtube;streaming;

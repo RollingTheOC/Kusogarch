@@ -2,7 +2,7 @@
 Name=EFSC Canvas
 Comment=Eastern Florida State College Canvas LMS
 Exec=xdg-open https://easternflorida.instructure.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/canvas.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=canvas;school;efsc;lms;

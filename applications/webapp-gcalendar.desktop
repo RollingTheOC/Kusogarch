@@ -2,7 +2,7 @@
 Name=Google Calendar
 Comment=Google Calendar
 Exec=xdg-open https://calendar.google.com
-Icon=web-browser
+Icon=PLACEHOLDER_ICON_DIR/gcalendar.png
 Type=Application
 Categories=Network;WebApp;
 Keywords=calendar;schedule;google;
