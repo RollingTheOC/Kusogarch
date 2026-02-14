@@ -5,7 +5,11 @@
 log_info "Configuring Surface-specific settings..."
 
 # 1. Enable iptsd (Intel Precise Touch & Stylus Daemon)
-enable_service iptsd
+if systemctl list-unit-files iptsd.service &>/dev/null; then
+    enable_service iptsd
+else
+    log_warn "iptsd service not found — skipping (install iptsd manually if needed)"
+fi
 
 # 2. Configure mkinitcpio for Surface hardware
 log_step "Configuring mkinitcpio for Surface hardware..."
@@ -31,7 +35,7 @@ sudo cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.kusogarch-bak
 log_step "Backed up mkinitcpio.conf"
 
 # Read current MODULES line and merge in Surface modules
-CURRENT_MODULES=$(grep '^MODULES=' /etc/mkinitcpio.conf | sed 's/MODULES=(\(.*\))/\1/')
+CURRENT_MODULES=$(grep '^MODULES=' /etc/mkinitcpio.conf 2>/dev/null | sed 's/MODULES=(\(.*\))/\1/' || true)
 MERGED_MODULES="$CURRENT_MODULES $SURFACE_MODULES"
 # Deduplicate
 MERGED_MODULES=$(echo "$MERGED_MODULES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)

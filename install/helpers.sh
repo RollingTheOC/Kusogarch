@@ -57,20 +57,20 @@ choose() {
     shift
     local options=("$@")
 
-    echo -e "${YELLOW}$prompt${NC}"
+    echo -e "${YELLOW}$prompt${NC}" >&2
     for i in "${!options[@]}"; do
-        echo "  $((i+1))) ${options[$i]}"
+        echo "  $((i+1))) ${options[$i]}" >&2
     done
-    echo ""
+    echo "" >&2
 
     local choice
     while true; do
-        read -p "  Select [1-${#options[@]}]: " choice
+        read -p "  Select [1-${#options[@]}]: " choice </dev/tty
         if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#options[@]}" ]; then
             echo "$choice"
             return 0
         fi
-        echo "  Invalid choice. Try again."
+        echo "  Invalid choice. Try again." >&2
     done
 }
 
