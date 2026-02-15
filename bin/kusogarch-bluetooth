@@ -1,17 +1,18 @@
 #!/bin/bash
 # kusogarch-bluetooth - Interactive Bluetooth device manager
 
-# Ensure bluetooth is powered on
+echo "Powering on Bluetooth..."
 bluetoothctl power on &>/dev/null
 
-# Start scanning briefly
-bluetoothctl scan on &>/dev/null &
-SCAN_PID=$!
-sleep 3
-kill "$SCAN_PID" 2>/dev/null
+echo "Scanning for devices (5 seconds)..."
+# Use --timeout to scan within the same bluetoothctl session,
+# ensuring discovered devices are registered in the device cache
+timeout 5 bluetoothctl --timeout 5 scan on &>/dev/null
 
 # Build device list with connection status
-DEVICE=$(bluetoothctl devices | while read -r _ mac name; do
+DEVICES=""
+while read -r _ mac name; do
+    [ -z "$mac" ] && continue
     if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
         status="[connected]"
     elif bluetoothctl info "$mac" 2>/dev/null | grep -q "Paired: yes"; then
@@ -19,8 +20,17 @@ DEVICE=$(bluetoothctl devices | while read -r _ mac name; do
     else
         status="[available]"
     fi
-    printf "%-40s  %s  %s\n" "$name" "$status" "$mac"
-done | fzf --prompt="Bluetooth > " \
+    DEVICES+="$(printf "%-40s  %s  %s" "$name" "$status" "$mac")"$'\n'
+done < <(bluetoothctl devices)
+
+if [ -z "$DEVICES" ]; then
+    echo "No devices found. Make sure your device is in pairing mode."
+    echo ""
+    read -n 1 -p "Press any key..."
+    exit 0
+fi
+
+DEVICE=$(printf '%s' "$DEVICES" | fzf --prompt="Bluetooth > " \
         --header="Select device" \
         --layout=reverse \
         --border=rounded \
@@ -40,13 +50,18 @@ if echo "$DEVICE" | grep -q "\[connected\]"; then
     ACTION=$(printf "Disconnect\nTrust\nRemove\nCancel" | \
         fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
 else
-    ACTION=$(printf "Connect\nPair\nTrust\nRemove\nCancel" | \
+    ACTION=$(printf "Connect\nPair + Trust + Connect\nPair\nTrust\nRemove\nCancel" | \
         fzf --prompt="$NAME > " --layout=reverse --border=rounded --height=100% --no-info)
 fi
 
 case "$ACTION" in
     "Connect")    bluetoothctl connect "$MAC" ;;
     "Disconnect") bluetoothctl disconnect "$MAC" ;;
+    "Pair + Trust + Connect")
+        bluetoothctl pair "$MAC" && \
+        bluetoothctl trust "$MAC" && \
+        bluetoothctl connect "$MAC"
+        ;;
     "Pair")       bluetoothctl pair "$MAC" ;;
     "Trust")      bluetoothctl trust "$MAC" ;;
     "Remove")     bluetoothctl remove "$MAC" ;;
