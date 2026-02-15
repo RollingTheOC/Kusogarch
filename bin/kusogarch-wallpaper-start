@@ -4,27 +4,19 @@
 
 CONF="$HOME/.config/hypr/hyprpaper.conf"
 
-# Extract wallpaper path from hyprpaper.conf
-# Handles both formats:
-#   preload = /path/to/wallpaper.jpg       (literal path)
-#   $WALLPAPER = /path/to/...              (Hyprlang variable)
-#   preload = $WALLPAPER
+# Extract wallpaper path from hyprpaper.conf (literal preload line)
 WP=""
 if [ -f "$CONF" ]; then
-    # First try literal path in preload line
     WP=$(grep -m1 '^preload = ' "$CONF" | sed 's/^preload = //')
-
-    # If it's a variable reference ($WALLPAPER), resolve it
-    if [[ "$WP" == \$* ]]; then
-        VARNAME="${WP#\$}"
-        WP=$(grep -m1 "^\\\$$VARNAME = " "$CONF" | sed "s/^\\\$$VARNAME = //")
-    fi
-
-    # Expand ~ to $HOME
     WP="${WP/#\~/$HOME}"
 fi
 
-# VM detection
+# Save current wallpaper path for other scripts to read
+if [ -n "$WP" ] && [ -f "$WP" ]; then
+    mkdir -p "$HOME/.config/kusogarch/current"
+    echo "$WP" > "$HOME/.config/kusogarch/current/wallpaper-path"
+fi
+
 if systemd-detect-virt -q 2>/dev/null; then
     # VM: swaybg (software rendering only)
     if [ -n "$WP" ] && [ -f "$WP" ]; then
@@ -34,5 +26,11 @@ if systemd-detect-virt -q 2>/dev/null; then
     fi
 else
     # Bare metal: hyprpaper (GPU-accelerated)
-    exec hyprpaper
+    # Verify config has a wallpaper before starting
+    if [ -n "$WP" ] && [ -f "$WP" ]; then
+        exec hyprpaper
+    else
+        # No wallpaper configured — start hyprpaper anyway (shows blank)
+        exec hyprpaper
+    fi
 fi
