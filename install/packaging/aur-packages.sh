@@ -17,6 +17,9 @@ aur_install greetd-regreet
 # hyprqt6engine (Hyprland Qt6 platform theme - KColorScheme support)
 aur_install hyprqt6engine
 
+# Bluetuith (TUI bluetooth manager)
+aur_install bluetuith-bin
+
 # Winboat (Windows app runner)
 aur_install winboat-bin
 
