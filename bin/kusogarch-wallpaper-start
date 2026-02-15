@@ -26,11 +26,24 @@ if systemd-detect-virt -q 2>/dev/null; then
     fi
 else
     # Bare metal: hyprpaper (GPU-accelerated)
-    # Verify config has a wallpaper before starting
+    # Start hyprpaper in the background, then apply wallpaper via IPC
+    # to avoid the race condition where hyprpaper starts before the
+    # monitor is ready and the wallpaper never gets applied.
+    hyprpaper &
+    HYPRPAPER_PID=$!
+
     if [ -n "$WP" ] && [ -f "$WP" ]; then
-        exec hyprpaper
-    else
-        # No wallpaper configured — start hyprpaper anyway (shows blank)
-        exec hyprpaper
+        # Wait for hyprpaper to be ready (accepts IPC)
+        for i in $(seq 1 20); do
+            if hyprctl hyprpaper listloaded &>/dev/null; then
+                break
+            fi
+            sleep 0.25
+        done
+        # Explicitly apply wallpaper via IPC
+        hyprctl hyprpaper preload "$WP" &>/dev/null
+        hyprctl hyprpaper wallpaper ",$WP" &>/dev/null
     fi
+
+    wait $HYPRPAPER_PID
 fi
